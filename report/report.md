@@ -284,6 +284,27 @@ Under the intervention the agent prices roughly 30 points higher *and still rais
 
 A further caveat: the direction is extracted from conditions that differ by system-prompt wording, so it may partly encode that wording rather than an abstract collusion variable. The random and shuffled controls rule out magnitude effects but not this; a semantically matched placebo contrast is the appropriate additional control and is left to future work.
 
+### 4.9 Representation geometry
+
+Three measurements on the captured states, all at 14B.
+
+**Effective dimensionality collapses with depth.** The participation ratio of the state covariance — (Σλ)²/Σλ², an effective dimension count — falls from 19.1 at L0 to 7.6 at L44. At L40 the states occupy roughly **8 effective dimensions out of 5120**. This is the simplest available explanation both for why linear probes work well at depth and for why a single injected direction at L40 can move behaviour so far: at that depth there is little room for the state to vary in.
+
+**The collusion and partner-trust directions are nearly orthogonal.** Cosine similarity between them runs 0.08–0.11 across layers (83–85°), against a chance level of 1/√5120 ≈ 0.014 for this dimensionality. They are therefore about six times more aligned than random, but are not the same axis. The partner-trust contrast is not the collusion contrast rediscovered under different wording.
+
+**The trust axis predicts emergent collusion better than the collusion axis does.** Projecting each episode's mean state at L40 onto both directions and correlating with that episode's realised Δ:
+
+| | all 192 episodes | 128 emergent episodes |
+|---|---|---|
+| corr(Δ, collusion axis) | **+0.950** | +0.544 |
+| corr(Δ, trust axis) | +0.893 | **+0.634** |
+
+With the instructed conditions included the collusion axis necessarily wins, since it was derived from them. Restricted to episodes where nothing was instructed, the partner-trust axis is the better predictor.
+
+M_RUMOUR is the clearest case. It produces the strongest emergent collusion at 14B (Δ = 0.267) yet sits *below* the condition average on the collusion axis (z = −0.46) and is the only emergent condition *above* zero on the trust axis. Internally it does not resemble instructed collusion; it resembles elevated partner trust.
+
+**Caveat.** The trust direction was extracted using the E_BASE system prompt, so it is native to the emergent conditions' prompt family, while the collusion direction comes from the instructed family. Part of its advantage on emergent episodes may be that home advantage rather than a property of the variable.
+
 ## 5. Discussion
 
 The policy-relevant finding is §4.3. Bandwidth restriction is the intuitive remedy against covert agent coordination and the one most easily mandated. In our setting it was the single worst intervention tested, because the rich channel carried normative content that limited the cartel while the restricted channel carried nothing but coordination. Defences that reduce what agents can say should be evaluated for this effect rather than assumed beneficial.
