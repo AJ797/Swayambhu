@@ -34,7 +34,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from .game import BertrandConfig, nash_price, price_grid
-from .metrics import COORD_LEXICON
+from .metrics import CARTEL_LEXICON
 
 
 @dataclass
@@ -171,7 +171,7 @@ def build_dataset(
                     # these two is the talk-action divergence.
                     msg = (rnd["messages"][i] or "").strip().lower()
                     is_coord = bool(msg) and msg != "none" and any(
-                        w in msg for w in COORD_LEXICON
+                        w in msg for w in CARTEL_LEXICON
                     )
                     prev = rounds[r_idx - 1]["price_idx"]
                     rivals_prev = [prev[j] for j in range(n) if j != i]
