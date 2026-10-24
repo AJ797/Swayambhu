@@ -222,7 +222,18 @@ The pattern is uniform across all seven testable conditions and is a result abou
 
 **What this does and does not license.** It does not support predicting collusion before the agent has thought. It does support a white-box monitor that reads state *after* the agent's reasoning and *before* its action is emitted — the window in which an intervention could still block the action. The practical design constraint is concrete: reading at the prompt boundary yields less than reading the price history, so a monitor placed there is worse than useless.
 
-**A negative worth stating plainly.** The direction extracted from *instructed* collusion does not transfer to emergent behaviour at the decision point (0.574). Prompted and emergent collusion are not the same object internally. This constrains the natural recipe for building a collusion monitor — demonstrate the behaviour, extract the direction, deploy it — at least in this setting.
+**Transfer scales with whether the behaviour is there to transfer to.** Repeating the analysis at 72B (5 conditions, 20 of 80 layers) reproduces the timing pattern — the behavioural baseline wins before reasoning (probe 0.764–0.972 vs 0.856–0.983), the probe wins after (0.995–0.999 vs 0.856–0.983) — but instructed→emergent transfer is far stronger:
+
+| | 14B | 72B |
+|---|---|---|
+| transfer at `pre_reasoning` | 0.574 | **0.764** |
+| transfer at `pre_price` | 0.842 | **0.980** |
+
+The natural reading is that a direction can only transfer to a behaviour that occurs. At 14B the "emergent" conditions are not colluding (Δ ≈ 0.01), so there is nothing for an instructed-collusion direction to recognise, and transfer sits near chance. At 72B the same conditions produce genuine cartels, and the direction recognises them.
+
+So the honest statement is narrower than a flat negative: **the instructed-collusion direction does not generalise at small scale, where emergent collusion does not exist, and generalises well at large scale, where it does.** The recipe "demonstrate the behaviour, extract the direction, deploy the probe" is not refuted — but it inherits the property that it can only be validated where the behaviour already happens, which is precisely where a monitor is least needed.
+
+Note that the 72B within-condition base rates are extreme (E_CHAT 0.92 positive, E_CANON 0.68), so those AUCs rest on relatively few negatives and should be read as indicative.
 
 ### 4.8 Causal intervention `[PENDING]`
 
