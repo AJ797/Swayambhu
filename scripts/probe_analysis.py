@@ -64,7 +64,9 @@ def fetch_activations(run_id: str) -> None:
     if (dest / run_id).exists():
         print(f"[fetch] data/acts/{run_id} already present, skipping")
         return
-    cmd = ["modal", "volume", "get", "swayambhu-cache", f"/acts/{run_id}", str(dest / run_id)]
+    # NB: no leading slash. `modal volume ls swayambhu-cache /acts` reports
+    # "No such file or directory" even though the path exists.
+    cmd = ["modal", "volume", "get", "swayambhu-cache", f"acts/{run_id}", str(dest / run_id)]
     print("[fetch] " + " ".join(cmd))
     subprocess.run(cmd, check=True)
 
