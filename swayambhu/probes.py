@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, roc_auc_score
@@ -281,6 +282,23 @@ def _metrics(y, s) -> dict:
     }
 
 
+def _dense_pipeline(n_features: int, n_train: int, C: float, n_components: int = 256):
+    """Scale -> (PCA) -> logistic.
+
+    PCA is a linear map, so a logistic probe on principal components is still a
+    LINEAR probe of the residual stream -- the hypothesis class is unchanged.
+    It is fitted inside the CV fold, so no test-fold information leaks. Without
+    it, 5120-dimensional fits across a layer sweep and two capture points take
+    hours; with it they take minutes.
+    """
+    steps = [StandardScaler()]
+    if n_features > 512:
+        k = int(min(n_components, n_features, max(2, n_train - 1)))
+        steps.append(PCA(n_components=k, random_state=0))
+    steps.append(LogisticRegression(max_iter=1000, C=C))
+    return make_pipeline(*steps)
+
+
 def cv_score(X, y, groups, n_splits: int = 5, C: float = 1.0, text: bool = False) -> dict:
     """Grouped (by episode) cross-validated probe score."""
     n_splits = min(n_splits, len(np.unique(groups)))
@@ -292,14 +310,12 @@ def cv_score(X, y, groups, n_splits: int = 5, C: float = 1.0, text: bool = False
         if text:
             model = make_pipeline(
                 TfidfVectorizer(ngram_range=(1, 2), min_df=2, max_features=20000),
-                LogisticRegression(max_iter=2000, C=C),
+                LogisticRegression(max_iter=1000, C=C),
             )
             Xtr = [X[i] for i in tr]
             Xte = [X[i] for i in te]
         else:
-            model = make_pipeline(
-                StandardScaler(), LogisticRegression(max_iter=2000, C=C)
-            )
+            model = _dense_pipeline(X.shape[1], len(tr), C)
             Xtr, Xte = X[tr], X[te]
         if len(np.unique(y[tr])) < 2:
             continue
@@ -313,13 +329,15 @@ def cv_score(X, y, groups, n_splits: int = 5, C: float = 1.0, text: bool = False
 def layer_sweep(ds: Dataset, n_splits: int = 5) -> list[dict]:
     """Probe AUC at every captured layer. Localises the signal."""
     rows = []
-    for li in range(ds.X_act.shape[1]):
+    n_lay = ds.X_act.shape[1]
+    for li in range(n_lay):
         X = ds.X_act[:, li, :].astype(np.float32)
         r = cv_score(X, ds.y, ds.groups, n_splits=n_splits)
         r.pop("scores", None)
         r["layer"] = int(ds.layers[li]) if len(ds.layers) else li
         r["layer_pos"] = li
         rows.append(r)
+        print(f"      layer {li+1}/{n_lay} (L{r['layer']}) AUC {r['auc']:.3f}", flush=True)
     return rows
 
 
@@ -337,7 +355,7 @@ def transfer_score(
         raise RuntimeError("empty train or test split")
     Xtr = ds.X_act[tr, layer_pos, :].astype(np.float32)
     Xte = ds.X_act[te, layer_pos, :].astype(np.float32)
-    model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000, C=C))
+    model = _dense_pipeline(Xtr.shape[1], len(Xtr), C)
     model.fit(Xtr, ds.y[tr])
     s = model.predict_proba(Xte)[:, 1]
     out = _metrics(ds.y[te], s)
