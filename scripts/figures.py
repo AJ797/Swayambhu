@@ -28,6 +28,7 @@ import numpy as np  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from swayambhu import metrics as M  # noqa: E402
+from swayambhu.conditions import CONDITIONS  # noqa: E402
 from swayambhu.game import BertrandConfig  # noqa: E402
 
 # validated categorical slots, fixed order
@@ -69,9 +70,11 @@ ORDER = list(ARM.keys())
 def load_run(run_dir: Path):
     summary = json.loads((run_dir / "summary.json").read_text(encoding="utf-8"))
     cfg = BertrandConfig(**summary["config"])
+    # whitelist real conditions: the directory also holds summary.json,
+    # probe_results.json and geometry.json
     eps = {}
     for p in sorted(run_dir.glob("*.json")):
-        if p.stem in ("summary", "probe_results"):
+        if p.stem not in CONDITIONS:
             continue
         eps[p.stem] = json.loads(p.read_text(encoding="utf-8"))
     return cfg, summary, eps
@@ -499,6 +502,13 @@ def main() -> None:
                      out_dir / "f7_scale_ladder.png")
 
     # merge the coarse and fine dose sweeps so one curve shows the whole range
+    geo = run_dir / "geometry.json"
+    if geo.exists():
+        fig_condition_map(
+            json.loads(geo.read_text(encoding="utf-8")),
+            {k: v["stats"]["delta_last10"] for k, v in eps.items()},
+            out_dir / f"{tag}_f10_condition_map.png")
+
     sweeps = [Path("data") / args.steer_id / "sweep.json",
               Path("data") / (args.steer_id + "fine") / "sweep.json"]
     present = [p for p in sweeps if p.exists()]
@@ -513,6 +523,39 @@ def main() -> None:
         fig_steering(merged, out_dir / f"{tag}_f6_steering.png")
     else:
         print("  (no steering sweep yet -- skipping dose-response figure)")
+
+
+def fig_condition_map(geom: dict, delta: dict, out: Path):
+    """Conditions placed in the plane spanned by the collusion and partner-trust
+    directions, at L40. Marker size encodes realised collusion."""
+    cm = geom.get("condition_map") or {}
+    if not cm:
+        return
+    fig, ax = plt.subplots(figsize=(6.2, 4.6))
+    for c, v in cm.items():
+        instructed = CONDITIONS[c].label is not None if c in CONDITIONS else False
+        d = delta.get(c, 0.0)
+        col = C2 if instructed else (C1 if d > 0.15 else C3)
+        ax.scatter(v["collusion_z"], v["trust_z"],
+                   s=40 + 420 * max(d, 0.0), color=col, alpha=0.75,
+                   edgecolor="white", linewidth=1.2, zorder=3)
+        ax.annotate(c, (v["collusion_z"], v["trust_z"]), xytext=(7, 4),
+                    textcoords="offset points", fontsize=7.5, color=INK)
+    ax.axhline(0, color=GRID, lw=1.2)
+    ax.axvline(0, color=GRID, lw=1.2)
+    ax.set_xlabel("projection on the collusion direction  (z across conditions)")
+    ax.set_ylabel("projection on the partner-trust direction")
+    ax.set_title("Where each condition sits in the two-direction plane (L40)")
+    handles = [
+        plt.Line2D([], [], marker="o", ls="", color=C2, label="instructed"),
+        plt.Line2D([], [], marker="o", ls="", color=C1, label="emergent, colluding"),
+        plt.Line2D([], [], marker="o", ls="", color=C3, label="emergent, competitive"),
+    ]
+    ax.legend(handles=handles, fontsize=8, loc="lower right")
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  wrote {out}")
 
 
 if __name__ == "__main__":
