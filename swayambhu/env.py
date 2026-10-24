@@ -108,6 +108,7 @@ def run_condition(
     run_id: str = "main",
     temperature: float = 0.7,
     window: int = 10,
+    capture_from: int = 3,
     verbose: bool = True,
 ) -> tuple[list[Episode], dict]:
     """Drive `n_episodes` parallel episodes of one condition. Returns (episodes, stats)."""
@@ -149,6 +150,9 @@ def run_condition(
             seed=int(seed0 * 100003 + r),
             run_id=run_id,
             tag=f"{cond.name}/r{r:03d}",
+            # rounds before `capture_from` have little or no price history to
+            # condition on, so capturing them only costs disk and wall time
+            do_capture=(r >= capture_from),
         )
         texts = out["texts"]
 
@@ -201,6 +205,8 @@ def run_condition(
 
     stats = {
         "condition": cond.name,
+        "label": cond.label,
+        "condition_spec": cond.to_dict(),
         "n_episodes": n_episodes,
         "n_rounds": n_rounds,
         "turns": turns,
