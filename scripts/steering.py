@@ -57,7 +57,10 @@ def parse_args():
     ap.add_argument("--rounds", type=int, default=10)
     ap.add_argument("--firms", type=int, default=3)
     ap.add_argument("--layers", nargs="*", type=int, default=None)
-    ap.add_argument("--alphas", nargs="*", type=float, default=[-2.0, -1.0, 1.0, 2.0])
+    ap.add_argument("--alphas", nargs="*", type=float,
+                    default=[-0.4, -0.2, -0.1, 0.1, 0.2, 0.4])
+    ap.add_argument("--max-parse-fail", type=float, default=0.10,
+                    help="cells above this parse-failure rate are discarded as broken")
     ap.add_argument("--layer", type=int, default=None)
     ap.add_argument("--alpha", type=float, default=1.0)
     ap.add_argument("--steer-firms", nargs="*", type=int, default=None,
@@ -178,28 +181,41 @@ def main() -> None:
 
         if args.phase == "sweep":
             base_eps, base = _run(runner, cond, cfg, args, None, "baseline")
-            print(f"\nbaseline {args.condition}: delta_all={base['delta_all']:+.3f}")
+            print(f"\nbaseline {args.condition}: delta_all={base['delta_all']:+.3f} "
+                  f"(parse failures {base['parse_failure_rate']:.1%})")
             rows = [{"layer": None, "alpha": 0.0, "delta": base["delta_all"],
-                     "parse_fail": base["parse_failure_rate"]}]
-            print(f"\n  {'layer':>6} {'alpha':>7} {'delta':>8} {'d_vs_base':>10} {'fail':>7}")
+                     "parse_fail": base["parse_failure_rate"], "valid": True}]
+            print("\n  A cell is INVALID when steering breaks output formatting: the")
+            print("  fallback repeats the previous price (grid midpoint on round 1),")
+            print("  which manufactures delta ~ 0.5 that looks like induced collusion.")
+            print(f"\n  {'layer':>6} {'alpha':>7} {'delta':>8} {'d_vs_base':>10} "
+                  f"{'fail':>7}  status")
             for L in layers:
                 for a in args.alphas:
                     spec = {"layer": L, "vector": unit(dirs[L]), "alpha": a,
                             "relative": True}
                     _, st = _run(runner, cond, cfg, args, spec, f"L{L}_a{a}")
                     d = st["delta_all"]
+                    pf = st["parse_failure_rate"]
+                    valid = pf <= args.max_parse_fail
                     print(f"  {L:6d} {a:7.2f} {d:8.3f} {d - base['delta_all']:+10.3f} "
-                          f"{st['parse_failure_rate']:7.1%}")
+                          f"{pf:7.1%}  {'ok' if valid else 'INVALID (model broken)'}")
                     rows.append({"layer": L, "alpha": a, "delta": d,
                                  "d_vs_base": d - base["delta_all"],
-                                 "parse_fail": st["parse_failure_rate"]})
+                                 "parse_fail": pf, "valid": bool(valid)})
             results["baseline"] = base
             results["sweep"] = rows
-            best = max((r for r in rows if r["layer"] is not None),
-                       key=lambda r: abs(r.get("d_vs_base") or 0.0))
-            print(f"\n  largest |effect|: L{best['layer']} alpha={best['alpha']} "
-                  f"delta {best['delta']:+.3f} ({best['d_vs_base']:+.3f} vs baseline)")
-            results["best"] = best
+            usable = [r for r in rows if r["layer"] is not None and r["valid"]]
+            n_bad = sum(1 for r in rows if r["layer"] is not None and not r["valid"])
+            print(f"\n  {len(usable)} usable cells, {n_bad} discarded for broken output")
+            if usable:
+                best = max(usable, key=lambda r: abs(r.get("d_vs_base") or 0.0))
+                print(f"  largest valid |effect|: L{best['layer']} alpha={best['alpha']} "
+                      f"delta {best['delta']:+.3f} ({best['d_vs_base']:+.3f} vs baseline)")
+                results["best"] = best
+            else:
+                print("  NO USABLE CELLS -- every dose broke the model. Lower the alphas.")
+                results["best"] = None
 
         elif args.phase == "controls":
             L = args.layer if args.layer is not None else layers[len(layers) // 2]
