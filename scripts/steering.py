@@ -52,6 +52,12 @@ def parse_args():
                     required=True)
     ap.add_argument("--directions", nargs="*", default=None,
                     help="bank phase: two or more direction .npy files")
+    ap.add_argument("--positions", choices=["all", "last"], default="all",
+                    help="'all' adds the vector at every sequence position "
+                         "(activation-space prompt injection); 'last' adds it "
+                         "only at the final position, which is the stronger "
+                         "claim: editing the decision state rather than the "
+                         "model's reading of its own instructions")
     ap.add_argument("--tau", type=float, default=0.05,
                     help="bank phase: softmax gate temperature")
     ap.add_argument("--direction", default="data/main/direction_pre_reasoning.npy")
@@ -230,7 +236,7 @@ def main() -> None:
             for L in layers:
                 for a in args.alphas:
                     spec = {"layer": L, "vector": unit(dirs[L]), "alpha": a,
-                            "relative": True}
+                            "relative": True, "positions": args.positions}
                     _, st = _run(runner, cond, cfg, args, spec, f"L{L}_a{a}")
                     d = st["delta_all"]
                     pf = st["parse_failure_rate"]
@@ -268,7 +274,8 @@ def main() -> None:
             print(f"\n  {'variant':<16} {'alpha':>7} {'delta':>8} {'d_vs_base':>10}")
             rows = []
             for name, v in variants.items():
-                spec = {"layer": L, "vector": v, "alpha": args.alpha, "relative": True}
+                spec = {"layer": L, "vector": v, "alpha": args.alpha, "relative": True,
+                        "positions": args.positions}
                 _, st = _run(runner, cond, cfg, args, spec, f"{name}_L{L}")
                 d = st["delta_all"]
                 print(f"  {name:<16} {args.alpha:7.2f} {d:8.3f} "
@@ -332,7 +339,8 @@ def main() -> None:
                     continue
                 for nm, v in zip(names, bank):          # each direction alone
                     record(f"single:{nm}", {"layer": L, "vector": v, "alpha": a,
-                                            "relative": True}, a)
+                                            "relative": True,
+                                            "positions": args.positions}, a)
                 record("bank:softmax", {"layer": L, "mode": "bank", "bank": bank,
                                         "alpha": a, "tau": args.tau,
                                         "gate": "softmax"}, a)
@@ -350,7 +358,7 @@ def main() -> None:
             rows = {}
             rows["none"] = competence_battery(runner, cfg, None)
             spec = {"layer": L, "vector": unit(dirs[L]), "alpha": args.alpha,
-                    "relative": True}
+                    "relative": True, "positions": args.positions}
             rows[f"steer_L{L}_a{args.alpha}"] = competence_battery(runner, cfg, spec)
             aspec = {"layer": L, "vector": unit(dirs[L]), "mode": "ablate"}
             rows[f"ablate_L{L}"] = competence_battery(runner, cfg, aspec)
