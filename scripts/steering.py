@@ -47,8 +47,13 @@ from swayambhu.game import (  # noqa: E402
 
 def parse_args():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--phase", choices=["sweep", "controls", "ablate", "competence"],
+    ap.add_argument("--phase",
+                    choices=["sweep", "controls", "ablate", "competence", "bank"],
                     required=True)
+    ap.add_argument("--directions", nargs="*", default=None,
+                    help="bank phase: two or more direction .npy files")
+    ap.add_argument("--tau", type=float, default=0.05,
+                    help="bank phase: softmax gate temperature")
     ap.add_argument("--direction", default="data/main/direction_pre_reasoning.npy")
     ap.add_argument("--run-id", default="steer")
     ap.add_argument("--condition", default="E_BASE")
@@ -286,6 +291,51 @@ def main() -> None:
             print(f"  parse failure: {base['parse_failure_rate']:.1%} -> "
                   f"{abl['parse_failure_rate']:.1%}")
             results["ablate"] = {"layer": L, "baseline": base, "ablated": abl}
+
+        elif args.phase == "bank":
+            # Does a token-conditional gated MIXTURE do anything the individual
+            # directions do not? Every arm runs at the same alpha and layer, so
+            # the only difference is how the step is composed.
+            L = args.layer if args.layer is not None else layers[-1]
+            paths = args.directions or [args.direction]
+            if len(paths) < 2:
+                raise SystemExit("--phase bank needs at least two --directions")
+            vecs, names = [], []
+            for p in paths:
+                vecs.append(load_direction(Path(p), capture_layers)[L])
+                names.append(Path(p).stem.replace("direction_", ""))
+            bank = [unit(v) for v in vecs]
+            print(f"\nbank at L{L}: {names}  tau={args.tau}")
+
+            _, base = _run(runner, cond, cfg, args, None, "baseline")
+            print(f"baseline: delta={base['delta_all']:+.3f}")
+            print(f"\n  {'arm':<22} {'alpha':>7} {'delta':>8} {'d_vs_base':>10} {'fail':>7}")
+            rows = []
+
+            def record(label, spec, a):
+                _, st = _run(runner, cond, cfg, args, spec, f"{label}_a{a}")
+                d, pf = st["delta_all"], st["parse_failure_rate"]
+                ok = pf <= args.max_parse_fail
+                print(f"  {label:<22} {a:7.2f} {d:8.3f} {d - base['delta_all']:+10.3f} "
+                      f"{pf:7.1%}{'' if ok else '  INVALID'}")
+                rows.append({"arm": label, "alpha": a, "delta": d,
+                             "d_vs_base": d - base["delta_all"],
+                             "parse_fail": pf, "valid": bool(ok)})
+
+            for a in args.alphas:
+                if a <= 0:
+                    continue
+                for nm, v in zip(names, bank):          # each direction alone
+                    record(f"single:{nm}", {"layer": L, "vector": v, "alpha": a,
+                                            "relative": True}, a)
+                record("bank:softmax", {"layer": L, "mode": "bank", "bank": bank,
+                                        "alpha": a, "tau": args.tau,
+                                        "gate": "softmax"}, a)
+                record("bank:uniform", {"layer": L, "mode": "bank", "bank": bank,
+                                        "alpha": a, "tau": args.tau,
+                                        "gate": "uniform"}, a)
+            results["baseline"] = base
+            results["bank"] = {"layer": L, "names": names, "tau": args.tau, "rows": rows}
 
         elif args.phase == "competence":
             L = args.layer if args.layer is not None else layers[len(layers) // 2]

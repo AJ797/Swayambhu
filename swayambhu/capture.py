@@ -158,6 +158,82 @@ def residual_norms(blocks: nn.ModuleList, layers: Sequence[int]):
 
 
 @contextlib.contextmanager
+def steer_bank(
+    blocks: nn.ModuleList,
+    layer: int,
+    bank: torch.Tensor,
+    alpha: float,
+    tau: float = 0.05,
+    gate: str = "softmax",
+    relative: bool = True,
+):
+    """Token-conditional, softmax-gated mixture over a bank of frozen directions.
+
+        g_i(h_t) = softmax_i( cos(h_t, v_i) / tau )
+        h_t  <-  h_t + alpha * ||h_t|| * sum_i g_i(h_t) * v_i_hat
+
+    `bank` is [k, d_model]; rows are L2-normalised here. The gate is
+    PARAMETER-FREE -- it reads cosine similarity against the bank rather than a
+    learned projection -- so there is nothing to train and nothing to overfit.
+
+    Two properties worth noting against the single-vector `steer`:
+
+    * The mixture is recomputed per token, so different positions receive
+      different combinations rather than one global offset.
+    * The dose uses ||h_t|| AT EACH POSITION, not the batch-and-sequence mean.
+      Single-vector steering rescales by a mean that is taken over the whole
+      prompt at prefill and over one token during decode, so its effective
+      coefficient silently differs between the two phases. This does not.
+
+    gate="uniform" replaces the softmax with an equal mixture, which isolates
+    how much of any effect is due to gating rather than to the bank's span.
+
+    Two calibration notes, both found by unit test rather than by assumption:
+
+    * `tau` must be small. Cosine similarities between a hidden state and a
+      direction are typically near zero, so softmax(cos / 1.0) is almost flat
+      and the "gate" barely gates -- measured entropy 1.082 against a uniform
+      ceiling of ln 3 = 1.099. The default is therefore 0.05, and
+      `gate_entropy` is reported so the selectivity actually achieved can be
+      checked rather than assumed.
+    * The mixture `g @ V` is a convex combination of unit vectors, so its norm
+      is at most 1 and is smaller when the gate is undecided. The effective
+      dose is thus alpha * ||mix||, not alpha. `mix_norm` is reported so this
+      is comparable with single-vector steering instead of silently differing.
+    """
+    stats: dict[str, float] = {}
+
+    def hook(_mod, _args, out):
+        h = _hidden(out)
+        h32 = h.to(torch.float32)
+        V = bank.to(device=h32.device, dtype=torch.float32)
+        V = V / (V.norm(dim=-1, keepdim=True) + 1e-8)          # [k, d]
+
+        norms = h32.norm(dim=-1, keepdim=True)                  # [b, s, 1]
+        if gate == "uniform":
+            g = torch.full(
+                (*h32.shape[:-1], V.shape[0]), 1.0 / V.shape[0], device=h32.device
+            )
+        else:
+            cos = (h32 @ V.T) / (norms + 1e-8)                  # [b, s, k]
+            g = torch.softmax(cos / max(tau, 1e-6), dim=-1)
+        mix = g @ V                                             # [b, s, d]
+        step = alpha * norms if relative else alpha
+        stats["mix_norm"] = float(mix.norm(dim=-1).mean())
+        stats["gate_max"] = float(g.max())
+        stats["gate_entropy"] = float(
+            -(g.clamp_min(1e-9) * g.clamp_min(1e-9).log()).sum(-1).mean()
+        )
+        return _rewrap(out, (h32 + step * mix).to(h.dtype))
+
+    handle = blocks[layer].register_forward_hook(hook)
+    try:
+        yield stats
+    finally:
+        handle.remove()
+
+
+@contextlib.contextmanager
 def ablate(blocks: nn.ModuleList, layer: int, vector: torch.Tensor):
     """Directional ablation: project the direction out of the residual stream."""
     def hook(_mod, _args, out):
