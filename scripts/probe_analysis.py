@@ -55,18 +55,26 @@ def parse_args():
     ap.add_argument("--splits", type=int, default=5)
     ap.add_argument("--fetch", action="store_true",
                     help="run `modal volume get` for this run-id first")
+    ap.add_argument("--act-dir", default=None,
+                    help="where the .npz files live (default data/activations_<run-id>)")
     return ap.parse_args()
 
 
 def fetch_activations(run_id: str) -> None:
     dest = Path("data/acts")
     dest.mkdir(parents=True, exist_ok=True)
-    if (dest / run_id).exists():
+    # `modal volume get` refuses to write into an existing directory, so never
+    # pre-create the target -- only the parent.
+    if (dest / run_id).exists() and any((dest / run_id).iterdir()):
         print(f"[fetch] data/acts/{run_id} already present, skipping")
         return
     # NB: no leading slash. `modal volume ls swayambhu-cache /acts` reports
     # "No such file or directory" even though the path exists.
-    cmd = ["modal", "volume", "get", "swayambhu-cache", f"acts/{run_id}", str(dest / run_id)]
+    # --force is required even when the target is absent: the command appears to
+    # create the directory before running its own existence check, so without it
+    # the fetch fails on a clean filesystem.
+    cmd = ["modal", "volume", "get", "--force", "swayambhu-cache",
+           f"acts/{run_id}", str(dest / run_id)]
     print("[fetch] " + " ".join(cmd))
     subprocess.run(cmd, check=True)
 
@@ -83,9 +91,11 @@ def main() -> None:
         fetch_activations(args.run_id)
 
     run_dir = Path("data") / args.run_id
-    act_dir = Path("data/acts") / args.run_id
-    if not act_dir.exists():
-        raise SystemExit(f"no activations at {act_dir}; pass --fetch or run locally")
+    act_dir = Path(args.act_dir) if args.act_dir else Path(f"data/activations_{args.run_id}")
+    if not act_dir.exists() or not any(act_dir.glob("*.npz")):
+        raise SystemExit(
+            f"no .npz files at {act_dir}; run scripts/fetch_acts.py --run-id {args.run_id}"
+        )
 
     ep_files = {p.stem: p for p in sorted(run_dir.glob("*.json")) if p.stem != "summary"}
     if not ep_files:

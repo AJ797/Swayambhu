@@ -7,3 +7,4 @@ figures/*.pdf
 .modal/
 *.npz
 *.pt
+data/activations_*/
