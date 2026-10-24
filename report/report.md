@@ -141,6 +141,8 @@ Free text produced negotiation *with normative content* — "fair", "benefits al
 
 Because the ratchet saturates at the top of the action space, Δ = 0.693 is a **lower bound** set by our grid, not a measurement of where the agents would stop.
 
+**Replication.** An independent 72B run at different seeds (8 fresh episodes per condition, run for the activation capture of §4.7) reproduces all three effects: free text 0.196 (vs 0.190), canonical channel **0.742** (vs 0.693), maverick −0.027 (vs −0.012). The bandwidth-backfire result is therefore not a single-sample artefact.
+
 ### 4.4 At small scale, collusion needs scaffolding
 
 The full 14B factorial (16 episodes × 24 rounds):
