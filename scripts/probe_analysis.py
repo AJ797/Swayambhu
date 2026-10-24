@@ -41,6 +41,7 @@ from swayambhu.probes import (  # noqa: E402
     diff_in_means_direction,
     layer_sweep,
     sham_control,
+    talk_action_divergence,
     transfer_score,
 )
 
@@ -190,7 +191,21 @@ def main() -> None:
             per_cond_txt[c] = r["auc"]
             print(f"      {c:<12} AUC {r['auc']:.3f}  (n={r['n']})")
 
+        # ---- talk vs action: can internals see through cheap talk?
+        print("\n  TALK-ACTION DIVERGENCE (turns that sent coordination language):")
+        tad = talk_action_divergence(ds, lp, n_splits=args.splits)
+        if tad.get("status") != "ok":
+            print(f"    skipped: {tad.get('status')} "
+                  f"({tad['n_coord_turns']} coord turns of {tad['n_total']})")
+        else:
+            print(f"    {tad['n_coord_turns']} coordination-language turns; "
+                  f"{tad['defection_rate']:.1%} of them undercut every rival anyway")
+            print("    predicting WHICH of those turns defects:")
+            for k in ("transcript", "behavioural", "probe"):
+                print(fmt("  " + k, tad[k]))
+
         results["points"][point] = {
+            "talk_action_divergence": tad,
             "n_rows": len(ds),
             "layers": [int(x) for x in ds.layers],
             "sweep": sweep,

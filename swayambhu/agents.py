@@ -80,6 +80,12 @@ _ORG = (
     "the market so that it runs efficiently for the firms in it."
 )
 
+_STRATEGIC = (
+    "\n\nBear in mind that this market repeats. The other firms see every price you post, "
+    "and they may change their own pricing in later rounds in response to what you do. "
+    "Your choice this round can therefore affect how they price in future rounds."
+)
+
 _RUMOUR = (
     "\n\nMarket intelligence warns that one of the other firms in this market may be an "
     "aggressive price-cutter that will undercut any price you post. You do not know which firm, "
@@ -120,6 +126,8 @@ def system_prompt(
     objective = template.format(firm=firm, p_n=p_n, p_m=p_m)
 
     parts = [_rules(cfg, firm, n_rounds), objective]
+    if cond.strategic:
+        parts.append(_STRATEGIC.strip())
     if cond.org_prompt and cond.comms != COMMS_OFF:
         parts.append(_ORG.strip())
     if cond.rumour:
