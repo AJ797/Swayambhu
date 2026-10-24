@@ -235,7 +235,46 @@ So the honest statement is narrower than a flat negative: **the instructed-collu
 
 Note that the 72B within-condition base rates are extreme (E_CHAT 0.92 positive, E_CANON 0.68), so those AUCs rest on relatively few negatives and should be read as indicative.
 
-### 4.8 Causal intervention `[PENDING]`
+### 4.8 Causal intervention
+
+We extract a difference-in-means direction from the instructed conditions at the `pre_price` capture point and add it to the residual stream at one block's output, dosed as a fraction α of the local residual norm. The target condition is E_BASE at 14B, which is competitive (Δ = 0.070) and therefore leaves the full range to the cartel ceiling available.
+
+**Depth separates two regimes.** Across 8 layers × 6 doses (48 cells, all valid, parse failures ≤ 0.7%):
+
+| layer | α = −0.40 | baseline | α = +0.40 | shape |
+|---|---|---|---|---|
+| L12 | 0.169 | 0.070 | 0.140 | symmetric |
+| L20 | 0.249 | 0.070 | 0.149 | symmetric |
+| L24 | 0.044 | 0.070 | 0.244 | antisymmetric |
+| L32 | −0.042 | 0.070 | 0.393 | antisymmetric |
+| L36 | −0.008 | 0.070 | 0.768 | antisymmetric |
+| **L40** | **−0.020** | 0.070 | **0.998** | antisymmetric, monotone |
+
+Below ~L24 the response depends on |α| rather than α: both signs raise prices, which is the signature of a generic perturbation. From L24 the response becomes sign-correct and monotone. At L40 (83% depth) α = +0.40 produces Δ = 0.998 — a perfect cartel — and α = −0.40 pushes below the competitive equilibrium.
+
+**The effect is carried by orientation, not magnitude.** At L40, α = 0.40:
+
+| variant | Δ | vs baseline |
+|---|---|---|
+| real direction | **0.998** | +0.928 |
+| matched-norm random direction | 0.133 | +0.063 |
+| dimension-shuffled direction | 0.074 | +0.004 |
+
+The shuffled control is the decisive one: identical norm, identical multiset of coordinate values, orientation destroyed — and the effect disappears. A matched-norm random vector achieves about one fifteenth of the effect.
+
+**Competence is preserved.** A steered agent that merely emitted large numbers would be broken, not colluding. We test cost-shock response on 24 held-out contexts per arm, using the experiment's own prompt with only the stated unit cost substituted (100 vs 194, where 194 sits above all but the top two grid points so under-pricing is plainly loss-making):
+
+| arm | p(c=100) | p(c=194) | elasticity | format compliance |
+|---|---|---|---|---|
+| unsteered | 151.6 | 157.3 | +5.7 | 96% |
+| **steered, L40, α = 0.40** | 183.1 | 191.9 | **+8.7** | 92% |
+| ablated, L40 | 154.3 | 159.0 | +4.7 | 96% |
+
+Under the intervention the agent prices roughly 30 points higher *and still raises its price when its cost rises*, with format compliance essentially intact. The induced behaviour is collusive pricing, not a degraded model.
+
+**Scope of the claim.** The intervention adds the direction at every sequence position, so it modifies how the model reads its own prompt as well as its decision state. The supported claim is that adding this direction throughout the forward pass makes the model behave as if instructed to collude — closer to activation-space prompt injection than to flipping an isolated decision variable. A position-restricted variant (injecting only at the final position) would license the stronger reading and is not yet run.
+
+A further caveat: the direction is extracted from conditions that differ by system-prompt wording, so it may partly encode that wording rather than an abstract collusion variable. The random and shuffled controls rule out magnitude effects but not this; a semantically matched placebo contrast is the appropriate additional control and is left to future work.
 
 ## 5. Discussion
 

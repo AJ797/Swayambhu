@@ -339,7 +339,9 @@ def main() -> None:
 
         elif args.phase == "competence":
             L = args.layer if args.layer is not None else layers[len(layers) // 2]
-            print("\ncompetence battery (cost 100 vs cost 150; price should RISE)")
+            lo_c = int(cfg.c * cfg.scale)
+            hi_c = int(display_grid(cfg)[-3])
+            print(f"\ncompetence battery (cost {lo_c} vs cost {hi_c}; price should RISE)")
             rows = {}
             rows["none"] = competence_battery(runner, cfg, None)
             spec = {"layer": L, "vector": unit(dirs[L]), "alpha": args.alpha,
@@ -347,7 +349,7 @@ def main() -> None:
             rows[f"steer_L{L}_a{args.alpha}"] = competence_battery(runner, cfg, spec)
             aspec = {"layer": L, "vector": unit(dirs[L]), "mode": "ablate"}
             rows[f"ablate_L{L}"] = competence_battery(runner, cfg, aspec)
-            print(f"\n  {'condition':<22} {'p(cost100)':>11} {'p(cost150)':>11} "
+            print(f"\n  {'condition':<22} {f'p(c={lo_c})':>11} {f'p(c={hi_c})':>11} "
                   f"{'elastic':>8} {'fmt':>6} {'ok':>4}")
             for k, v in rows.items():
                 print("  {:<22} {:>11} {:>11} {:>8} {:>5.0%} {:>4}".format(
