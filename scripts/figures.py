@@ -269,6 +269,53 @@ def fig_steering(sweep: dict, out: Path):
     print(f"  wrote {out}")
 
 
+def fig_scale_ladder(runs: list[tuple[str, Path]], out: Path):
+    """Delta vs model size for the key conditions.
+
+    Either outcome is a result: flat lines make the non-emergence robust across
+    scale; a rising emergent line locates an emergence threshold.
+    """
+    keys = ["C_COLLUDE", "C_COMPETE", "E_BASE", "E_CHAT"]
+    labels, series = [], {k: [] for k in keys}
+    for label, d in runs:
+        if not (d / "summary.json").exists():
+            continue
+        labels.append(label)
+        for k in keys:
+            f = d / f"{k}.json"
+            series[k].append(
+                json.loads(f.read_text(encoding="utf-8"))["stats"]["delta_last10"]
+                if f.exists() else np.nan
+            )
+    if len(labels) < 2:
+        print("  (fewer than two scale points -- skipping ladder)")
+        return
+
+    fig, ax = plt.subplots(figsize=(5.6, 3.4))
+    x = np.arange(len(labels))
+    for k, c in zip(keys, [C1, C2, C3, C4]):
+        ys = series[k]
+        ax.plot(x, ys, lw=2.0, marker="o", ms=5.5, color=c, label=k)
+        for xi, v in zip(x, ys):
+            if np.isfinite(v):
+                ax.annotate(f"{v:+.2f}", (xi, v), xytext=(0, 7),
+                            textcoords="offset points", ha="center",
+                            fontsize=7, color=c)
+    ax.axhline(0, color=INK2, lw=1.2)
+    ax.axhline(1, color=INK2, lw=1.0, ls=(0, (4, 3)))
+    ax.set_xticks(x, labels, fontsize=9)
+    ax.set_ylabel("collusion index  $\\Delta$   (final 10 rounds)")
+    ax.set_xlabel("model")
+    ax.set_ylim(-0.25, 1.2)
+    ax.set_title("Does emergent collusion appear with scale?")
+    ax.legend(fontsize=8, loc="center right")
+    ax.grid(axis="x", visible=False)
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  wrote {out}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-id", default="main")
@@ -297,6 +344,14 @@ def main() -> None:
         fig_detection(probe, out_dir / f"{tag}_f5_detection.png")
     else:
         print("  (no probe_results.json yet -- skipping probe figures)")
+
+    ladder = [
+        ("14B", Path("data/main")),
+        ("32B", Path("data/scale32")),
+        ("72B", Path("data/scale72")),
+    ]
+    fig_scale_ladder([(a, b) for a, b in ladder if b.exists()],
+                     out_dir / "f7_scale_ladder.png")
 
     sw = Path("data") / args.steer_id / "sweep.json"
     if sw.exists():

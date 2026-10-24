@@ -31,6 +31,16 @@ from swayambhu.game import BertrandConfig, monopoly_price, nash_price  # noqa: E
 
 PILOT_CONDITIONS = ["C_COLLUDE", "C_COMPETE", "E_BASE", "E_CHAT"]
 
+# Run order matters: a long run can be interrupted, and each condition is saved
+# as it completes. Front-load the ones the mechanistic pipeline cannot proceed
+# without (labelled controls), then the headline emergent arm, then the rest.
+PRIORITY = [
+    "C_COLLUDE", "C_COMPETE", "CC_COLLUDE", "CC_COMPETE",
+    "E_CHAT", "E_BASE", "E_CANON",
+    "E_STRAT_CHAT", "E_STRAT", "E_ORG",
+    "M_PRESENT", "M_RUMOUR",
+]
+
 
 def parse_args():
     ap = argparse.ArgumentParser()
@@ -49,6 +59,8 @@ def parse_args():
     ap.add_argument("--pilot", action="store_true",
                     help="4 conditions, 6 episodes, 12 rounds -- the Gate 2 check")
     ap.add_argument("--no-optional", action="store_true")
+    ap.add_argument("--force", action="store_true",
+                    help="re-run conditions whose output already exists")
     return ap.parse_args()
 
 
@@ -62,6 +74,7 @@ def resolve_conditions(args) -> list:
     missing = [n for n in names if n not in CONDITIONS]
     if missing:
         raise SystemExit(f"unknown conditions: {missing}")
+    names = sorted(names, key=lambda n: PRIORITY.index(n) if n in PRIORITY else 99)
     return [CONDITIONS[n] for n in names]
 
 
@@ -127,6 +140,13 @@ def main() -> None:
         print(f"capturing {len(layers)} of {n_layers} layers: {layers}")
         all_stats = []
         for cond in conds:
+            done = out_dir / f"{cond.name}.json"
+            if done.exists() and not args.force:
+                prev = json.loads(done.read_text(encoding="utf-8"))
+                all_stats.append(prev["stats"])
+                print(f"\n--- {cond.name} --- already complete, skipping "
+                      f"(delta_last10={prev['stats']['delta_last10']:+.3f})")
+                continue
             t0 = time.time()
             print(f"\n--- {cond.name} ---")
             eps, stats = run_condition(

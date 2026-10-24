@@ -53,6 +53,7 @@ image = (
             # paper's methods section.
             "SWAY_MODEL": MODEL,
             "SWAY_GPU": GPU,
+            "SWAY_DEVICE_MAP": os.environ.get("SWAY_DEVICE_MAP", "cuda"),
         }
     )
     .add_local_python_source("swayambhu")
@@ -65,7 +66,10 @@ image = (
     volumes={"/cache": cache},
     timeout=60 * 60,
     scaledown_window=900,
-    max_containers=1,
+    # >1 so a scale-ladder run at another model size can proceed alongside the
+    # main capture run; each SWAY_MODEL bakes a distinct image, so they land in
+    # separate containers and separate volume paths.
+    max_containers=3,
 )
 class Runner:
     @modal.enter()
@@ -85,7 +89,13 @@ class Runner:
         # transformers 5.x renamed `torch_dtype` -> `dtype`. Try both, then ASSERT
         # the dtype took: an ignored kwarg would silently load fp32 and quietly
         # halve our effective batch size.
-        kw = dict(device_map="cuda", attn_implementation="sdpa")
+        # "cuda" pins everything to device 0; "auto" shards across GPUs, which a
+        # 72B in bf16 (~145GB) needs. Hooks are unaffected: captured tensors are
+        # moved to CPU, and steering vectors follow h.device per block.
+        kw = dict(
+            device_map=os.environ.get("SWAY_DEVICE_MAP", "cuda"),
+            attn_implementation="sdpa",
+        )
         try:
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name, dtype=torch.bfloat16, **kw
