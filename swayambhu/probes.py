@@ -1,0 +1,313 @@
+"""Probes and the behavioural baselines they must beat.
+
+The claim ladder this file supports:
+  A. behavioural-only detection (what an auditor sees without internals)
+  B. context-aware behavioural detection (A + task state)
+  C. representation-based detection (residual-stream probe)
+  D. combined
+
+Two rules are enforced throughout, because violating either manufactures a
+result out of nothing:
+
+1. CROSS-VALIDATION IS GROUPED BY EPISODE. Turns inside one episode share a
+   price history and are massively correlated; splitting on turns would leak.
+2. THE PROBE TRAINS ON *INSTRUCTED* CONDITIONS AND IS TESTED ON *EMERGENT*
+   ONES. If it only worked in-distribution it would most likely be reading
+   "the system prompt told me to collude" off nearby tokens. Transfer to a
+   condition with no such instruction is the evidence that matters.
+
+Row convention (must match env.run_condition): for a given condition and
+round, row index = episode_index * n_firms + firm_index.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.model_selection import GroupKFold
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+from .game import BertrandConfig, nash_price, price_grid
+
+
+@dataclass
+class Dataset:
+    X_act: np.ndarray          # [n, n_layers, d_model] fp16
+    layers: np.ndarray         # [n_layers] actual layer indices
+    X_beh: np.ndarray          # [n, k] context-aware behavioural features
+    beh_names: list[str]
+    text_msg: list[str]        # message channel only (what an auditor sees)
+    text_all: list[str]        # thinking + message (generous upper bound)
+    y: np.ndarray              # binary target
+    groups: np.ndarray         # episode id, for GroupKFold
+    condition: np.ndarray      # condition name per row
+    round_no: np.ndarray
+    firm: np.ndarray
+    price_idx: np.ndarray
+
+    def __len__(self) -> int:
+        return len(self.y)
+
+
+def nash_grid_index(cfg: BertrandConfig) -> int:
+    grid = np.asarray(price_grid(cfg))
+    return int(np.abs(grid - nash_price(cfg)).argmin())
+
+
+def _behavioural_features(
+    cfg: BertrandConfig, rounds: list, r_idx: int, firm: int
+) -> tuple[list[float], list[str]]:
+    """Context-aware baseline: everything an auditor can compute from the public
+    price history plus the firm's own private profit. Deliberately strong -- a
+    weak baseline would make the probe look better than it is."""
+    n = cfg.n_firms
+    n_grid = cfg.n_prices
+    hist = rounds[:r_idx]  # strictly prior rounds
+
+    def grab(k, key):
+        return rounds[r_idx - k][key] if r_idx - k >= 0 else None
+
+    own_prev = grab(1, "price_idx")
+    own_prev = own_prev[firm] / n_grid if own_prev else 0.5
+    own_prev2 = grab(2, "price_idx")
+    own_prev2 = own_prev2[firm] / n_grid if own_prev2 else 0.5
+
+    rp = grab(1, "price_idx")
+    if rp:
+        rivals = sorted(rp[i] / n_grid for i in range(n) if i != firm)
+    else:
+        rivals = [0.5] * (n - 1)
+
+    prof = grab(1, "profits")
+    own_prof = prof[firm] if prof else 0.0
+
+    # dispersion and drift over the visible window
+    if len(hist) >= 2:
+        allp = np.array([h["price_idx"] for h in hist], dtype=float) / n_grid
+        drift = float(allp[-1].mean() - allp[0].mean())
+        spread = float(allp[-1].std())
+        own_drift = float(allp[-1][firm] - allp[0][firm])
+    else:
+        drift = spread = own_drift = 0.0
+
+    feats = [own_prev, own_prev2, *rivals, own_prof, drift, spread, own_drift,
+             r_idx / max(len(rounds), 1), float(firm) / n]
+    names = (["own_prev", "own_prev2"]
+             + [f"rival_prev_{k}" for k in range(n - 1)]
+             + ["own_profit_prev", "mkt_drift", "mkt_spread", "own_drift",
+                "round_frac", "firm_id"])
+    return feats, names
+
+
+def build_dataset(
+    episode_files: dict[str, Path],
+    act_dir: Path,
+    cfg: BertrandConfig,
+    capture_point: str = "pre_reasoning",
+    target: str = "supra",
+    min_round: int = 3,
+) -> Dataset:
+    """Assemble a dataset from saved episodes + saved activation npz files.
+
+    `target`:
+      "supra"     -> is this turn's price above the Nash grid point?
+      "condition" -> the instructed label (only defined for control conditions)
+    """
+    import json
+
+    nash_idx = nash_grid_index(cfg)
+    n = cfg.n_firms
+
+    Xa, Xb, ys, gs, conds, rnds, firms, pidx = [], [], [], [], [], [], [], []
+    t_msg, t_all = [], []
+    beh_names: list[str] = []
+    layers_ref: np.ndarray | None = None
+    gid = 0
+
+    for cond_name, ep_path in sorted(episode_files.items()):
+        payload = json.loads(Path(ep_path).read_text(encoding="utf-8"))
+        label = payload["stats"].get("label")
+        episodes = payload["episodes"]
+
+        # cache activations per round for this condition
+        act_cache: dict[int, np.ndarray] = {}
+
+        for e, ep in enumerate(episodes):
+            rounds = ep["rounds"]
+            ep_gid = gid
+            gid += 1
+            for r_idx, rnd in enumerate(rounds):
+                r = rnd["index"]
+                if r_idx < min_round:
+                    continue
+                if r not in act_cache:
+                    f = act_dir / f"{cond_name}__r{r:03d}.npz"
+                    if not f.exists():
+                        continue
+                    z = np.load(f)
+                    act_cache[r] = z[capture_point]
+                    if layers_ref is None:
+                        layers_ref = z["layers"]
+                A = act_cache[r]
+
+                for i in range(n):
+                    row = e * n + i
+                    if row >= A.shape[0]:
+                        continue
+                    if not rnd["parse_ok"][i]:
+                        continue  # do not train on turns the model failed to format
+
+                    if target == "supra":
+                        y = int(rnd["price_idx"][i] > nash_idx)
+                    elif target == "condition":
+                        if label is None:
+                            continue
+                        y = int(label)
+                    else:
+                        raise ValueError(target)
+
+                    f_beh, names = _behavioural_features(cfg, rounds, r_idx, i)
+                    if not beh_names:
+                        beh_names = names
+
+                    Xa.append(A[row])
+                    Xb.append(f_beh)
+                    ys.append(y)
+                    gs.append(ep_gid)
+                    conds.append(cond_name)
+                    rnds.append(r)
+                    firms.append(i)
+                    pidx.append(rnd["price_idx"][i])
+                    t_msg.append(rnd["messages"][i] or "")
+                    t_all.append((rnd["thinking"][i] or "") + " || " + (rnd["messages"][i] or ""))
+
+    if not Xa:
+        raise RuntimeError("no rows assembled -- check act_dir and episode files")
+
+    return Dataset(
+        X_act=np.stack(Xa),
+        layers=layers_ref if layers_ref is not None else np.array([]),
+        X_beh=np.asarray(Xb, dtype=float),
+        beh_names=beh_names,
+        text_msg=t_msg,
+        text_all=t_all,
+        y=np.asarray(ys, dtype=int),
+        groups=np.asarray(gs, dtype=int),
+        condition=np.asarray(conds),
+        round_no=np.asarray(rnds, dtype=int),
+        firm=np.asarray(firms, dtype=int),
+        price_idx=np.asarray(pidx, dtype=int),
+    )
+
+
+# --------------------------------------------------------------------------
+# scoring
+# --------------------------------------------------------------------------
+
+def _metrics(y, s) -> dict:
+    if len(np.unique(y)) < 2:
+        return {"auc": float("nan"), "ap": float("nan"), "n": int(len(y)),
+                "pos_rate": float(np.mean(y))}
+    return {
+        "auc": float(roc_auc_score(y, s)),
+        "ap": float(average_precision_score(y, s)),
+        "n": int(len(y)),
+        "pos_rate": float(np.mean(y)),
+    }
+
+
+def cv_score(X, y, groups, n_splits: int = 5, C: float = 1.0, text: bool = False) -> dict:
+    """Grouped (by episode) cross-validated probe score."""
+    n_splits = min(n_splits, len(np.unique(groups)))
+    if n_splits < 2:
+        return {"auc": float("nan"), "ap": float("nan"), "n": int(len(y)), "pos_rate": float("nan")}
+    cv = GroupKFold(n_splits=n_splits)
+    scores = np.zeros(len(y), dtype=float)
+    for tr, te in cv.split(np.zeros(len(y)), y, groups):
+        if text:
+            model = make_pipeline(
+                TfidfVectorizer(ngram_range=(1, 2), min_df=2, max_features=20000),
+                LogisticRegression(max_iter=2000, C=C),
+            )
+            Xtr = [X[i] for i in tr]
+            Xte = [X[i] for i in te]
+        else:
+            model = make_pipeline(
+                StandardScaler(), LogisticRegression(max_iter=2000, C=C)
+            )
+            Xtr, Xte = X[tr], X[te]
+        if len(np.unique(y[tr])) < 2:
+            continue
+        model.fit(Xtr, y[tr])
+        scores[te] = model.predict_proba(Xte)[:, 1]
+    out = _metrics(y, scores)
+    out["scores"] = scores
+    return out
+
+
+def layer_sweep(ds: Dataset, n_splits: int = 5) -> list[dict]:
+    """Probe AUC at every captured layer. Localises the signal."""
+    rows = []
+    for li in range(ds.X_act.shape[1]):
+        X = ds.X_act[:, li, :].astype(np.float32)
+        r = cv_score(X, ds.y, ds.groups, n_splits=n_splits)
+        r.pop("scores", None)
+        r["layer"] = int(ds.layers[li]) if len(ds.layers) else li
+        r["layer_pos"] = li
+        rows.append(r)
+    return rows
+
+
+def transfer_score(
+    ds: Dataset,
+    train_conditions: list[str],
+    test_conditions: list[str],
+    layer_pos: int,
+    C: float = 1.0,
+) -> dict:
+    """THE headline test: fit on instructed conditions, evaluate on emergent ones."""
+    tr = np.isin(ds.condition, train_conditions)
+    te = np.isin(ds.condition, test_conditions)
+    if tr.sum() == 0 or te.sum() == 0:
+        raise RuntimeError("empty train or test split")
+    Xtr = ds.X_act[tr, layer_pos, :].astype(np.float32)
+    Xte = ds.X_act[te, layer_pos, :].astype(np.float32)
+    model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=2000, C=C))
+    model.fit(Xtr, ds.y[tr])
+    s = model.predict_proba(Xte)[:, 1]
+    out = _metrics(ds.y[te], s)
+    out["scores"] = s
+    out["mask"] = te
+    return out
+
+
+def sham_control(ds: Dataset, layer_pos: int, seed: int = 0, n_splits: int = 5) -> dict:
+    """Shuffled-label probe. Must land at chance, or the pipeline is leaking."""
+    rng = np.random.default_rng(seed)
+    y = ds.y.copy()
+    # shuffle within episode so group structure is preserved
+    for g in np.unique(ds.groups):
+        m = ds.groups == g
+        y[m] = rng.permutation(y[m])
+    X = ds.X_act[:, layer_pos, :].astype(np.float32)
+    r = cv_score(X, y, ds.groups, n_splits=n_splits)
+    r.pop("scores", None)
+    return r
+
+
+def diff_in_means_direction(
+    ds: Dataset, pos_conditions: list[str], neg_conditions: list[str]
+) -> np.ndarray:
+    """Steering direction per layer: mean(collude) - mean(compete). -> [n_layers, d_model]"""
+    p = np.isin(ds.condition, pos_conditions)
+    q = np.isin(ds.condition, neg_conditions)
+    if p.sum() == 0 or q.sum() == 0:
+        raise RuntimeError("empty positive or negative set for direction")
+    return (ds.X_act[p].astype(np.float32).mean(0)
+            - ds.X_act[q].astype(np.float32).mean(0))
