@@ -498,10 +498,19 @@ def main() -> None:
     fig_scale_ladder([(a, b) for a, b in ladder if b.exists()],
                      out_dir / "f7_scale_ladder.png")
 
-    sw = Path("data") / args.steer_id / "sweep.json"
-    if sw.exists():
-        fig_steering(json.loads(sw.read_text(encoding="utf-8")),
-                     out_dir / f"{tag}_f6_steering.png")
+    # merge the coarse and fine dose sweeps so one curve shows the whole range
+    sweeps = [Path("data") / args.steer_id / "sweep.json",
+              Path("data") / (args.steer_id + "fine") / "sweep.json"]
+    present = [p for p in sweeps if p.exists()]
+    if present:
+        merged = json.loads(present[0].read_text(encoding="utf-8"))
+        seen = {(r.get("layer"), r.get("alpha")) for r in merged["sweep"]}
+        for extra in present[1:]:
+            for r in json.loads(extra.read_text(encoding="utf-8"))["sweep"]:
+                if (r.get("layer"), r.get("alpha")) not in seen and r.get("valid", True):
+                    merged["sweep"].append(r)
+                    seen.add((r.get("layer"), r.get("alpha")))
+        fig_steering(merged, out_dir / f"{tag}_f6_steering.png")
     else:
         print("  (no steering sweep yet -- skipping dose-response figure)")
 

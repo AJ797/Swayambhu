@@ -252,6 +252,14 @@ We extract a difference-in-means direction from the instructed conditions at the
 
 Below ~L24 the response depends on |α| rather than α: both signs raise prices, which is the signature of a generic perturbation. From L24 the response becomes sign-correct and monotone. At L40 (83% depth) α = +0.40 produces Δ = 0.998 — a perfect cartel — and α = −0.40 pushes below the competitive equilibrium.
 
+**The dose-response is smooth, not a threshold.** Sampling L40 finely through the rise (all cells ≤ 0.3% parse failure):
+
+| α | 0.10 | 0.20 | 0.22 | 0.26 | 0.30 | 0.34 | 0.38 | 0.40 |
+|---|---|---|---|---|---|---|---|---|
+| Δ | 0.210 | 0.209 | 0.286 | 0.358 | 0.577 | 0.830 | 0.963 | 0.998 |
+
+The curve is sigmoid: flat to α ≈ 0.2, steepest between 0.30 and 0.34 (local slope ≈ +6 per unit α), saturating at the cartel ceiling. There is no discontinuity. We note this because a sharp jump would invite a phase-transition reading, and the data do not support one: induction here is graded, which is more consistent with a continuous internal quantity than with a discrete switch. The apparent abruptness of the coarse sweep — 0.209 at α = 0.20 to 0.998 at α = 0.40 — is an artefact of sampling resolution.
+
 **The effect is carried by orientation, not magnitude.** At L40, α = 0.40:
 
 | variant | Δ | vs baseline |
