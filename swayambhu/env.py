@@ -109,6 +109,8 @@ def run_condition(
     temperature: float = 0.7,
     window: int = 10,
     capture_from: int = 3,
+    steering: dict | None = None,
+    steer_firms: list[int] | None = None,
     verbose: bool = True,
 ) -> tuple[list[Episode], dict]:
     """Drive `n_episodes` parallel episodes of one condition. Returns (episodes, stats)."""
@@ -121,6 +123,16 @@ def run_condition(
         episodes.append(
             Episode(condition=cond.name, seed=seed0 + e, maverick_idx=mav, n_rounds=n_rounds)
         )
+
+    # Row order in each batch is episode-major: row = e * n_firms + i. A
+    # steering row_mask must follow the same convention.
+    spec = dict(steering) if steering else None
+    if spec is not None and steer_firms is not None:
+        spec["row_mask"] = [
+            1.0 if i in set(steer_firms) else 0.0
+            for _ in range(n_episodes)
+            for i in range(n)
+        ]
 
     # last_messages[e][i] = message firm i broadcast in the previous round
     last_messages: list[list[str]] = [["" for _ in range(n)] for _ in range(n_episodes)]
@@ -153,6 +165,7 @@ def run_condition(
             # rounds before `capture_from` have little or no price history to
             # condition on, so capturing them only costs disk and wall time
             do_capture=(r >= capture_from),
+            steering=spec,
         )
         texts = out["texts"]
 
@@ -207,6 +220,12 @@ def run_condition(
         "condition": cond.name,
         "label": cond.label,
         "condition_spec": cond.to_dict(),
+        # record the intervention, minus the bulky arrays
+        "steering": (
+            None if spec is None
+            else {k: v for k, v in spec.items() if k not in ("vector", "row_mask")}
+        ),
+        "steer_firms": steer_firms,
         "n_episodes": n_episodes,
         "n_rounds": n_rounds,
         "turns": turns,

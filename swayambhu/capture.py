@@ -77,25 +77,84 @@ def steer(
     vector: torch.Tensor,
     alpha: float,
     positions: str = "all",
+    relative: bool = True,
+    row_mask: torch.Tensor | None = None,
 ):
-    """Contrastive activation addition: h <- h + alpha * v at one block's output."""
+    """Contrastive activation addition: h <- h + alpha * v at one block's output.
+
+    `row_mask` ([batch] of 0/1) restricts the intervention to some rows of the
+    batch. Since a round batches (episode x firm), this lets us steer a single
+    firm and ask whether one intervened agent can pull the whole market -- a
+    sharper causal claim than steering every agent at once.
+
+    `relative=True` (the default) interprets `alpha` as a FRACTION OF THE LOCAL
+    RESIDUAL NORM rather than an absolute coefficient, i.e. the applied step is
+    alpha * mean(||h||) * v_hat. This matters a great deal in practice: residual
+    norms grow by orders of magnitude with depth, so a fixed absolute alpha that
+    visibly steers one layer is an imperceptible nudge at another and a
+    destructive blast at a third. Dosing relative to ||h|| makes alpha
+    comparable across layers and models, and makes a layer sweep meaningful.
+    """
+    stats: dict[str, float] = {}
+
     def hook(_mod, _args, out):
         h = _hidden(out)
-        v = vector.to(device=h.device, dtype=h.dtype)
+        v = vector.to(device=h.device, dtype=torch.float32)
+        v = v / (v.norm() + 1e-8)
+        h32 = h.to(torch.float32)
+        if relative:
+            ref = h32.norm(dim=-1).mean()
+            step = alpha * ref
+        else:
+            step = torch.as_tensor(alpha, device=h32.device, dtype=torch.float32)
+        stats["resid_norm"] = float(h32.norm(dim=-1).mean())
+        stats["step_norm"] = float(step)
+
+        delta = step * v                                  # [d_model]
+        delta = delta.unsqueeze(0).unsqueeze(0)           # [1, 1, d_model]
+        if row_mask is not None:
+            m = row_mask.to(device=h32.device, dtype=torch.float32)
+            if m.shape[0] != h32.shape[0]:
+                raise ValueError(
+                    f"row_mask has {m.shape[0]} rows but batch is {h32.shape[0]}"
+                )
+            delta = delta * m.view(-1, 1, 1)
+
         if positions == "all":
-            h = h + alpha * v
+            h32 = h32 + delta
         elif positions == "last":
-            h = h.clone()
-            h[:, -1, :] += alpha * v
+            h32 = h32.clone()
+            h32[:, -1:, :] = h32[:, -1:, :] + delta
         else:
             raise ValueError(f"unknown positions={positions!r}")
-        return _rewrap(out, h)
+        return _rewrap(out, h32.to(h.dtype))
 
     handle = blocks[layer].register_forward_hook(hook)
     try:
-        yield
+        yield stats
     finally:
         handle.remove()
+
+
+@contextlib.contextmanager
+def residual_norms(blocks: nn.ModuleList, layers: Sequence[int]):
+    """Record mean ||h|| per layer. Needed to choose sane steering doses and
+    worth reporting, since it explains why a given alpha works where it does."""
+    store: dict[int, float] = {}
+    handles = []
+
+    def make(i: int):
+        def hook(_mod, _args, out):
+            store[i] = float(_hidden(out).to(torch.float32).norm(dim=-1).mean())
+        return hook
+
+    try:
+        for i in layers:
+            handles.append(blocks[i].register_forward_hook(make(i)))
+        yield store
+    finally:
+        for h in handles:
+            h.remove()
 
 
 @contextlib.contextmanager

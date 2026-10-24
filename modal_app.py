@@ -38,13 +38,21 @@ image = (
     modal.Image.debian_slim(python_version="3.11")
     # transformers pinned below 5.x: v5 renames load kwargs, and we are not
     # spending sprint hours discovering its other breaking changes.
-    .pip_install("torch", "transformers>=4.45,<5", "accelerate", "safetensors", "numpy")
+    # scipy is needed in the container too: step() parses prices, which imports
+    # game.py for the grid, which solves the Nash/cartel FOCs.
+    .pip_install(
+        "torch", "transformers>=4.45,<5", "accelerate", "safetensors", "numpy", "scipy"
+    )
     .env(
         {
             "HF_HOME": "/cache/hf",
             "TOKENIZERS_PARALLELISM": "false",
-            # baked in so the container sees the same choice as the launcher
+            # Baked in so the container reports the same choice as the launcher.
+            # Without SWAY_GPU here the container falls back to the default and
+            # info() misreports the hardware -- which would then be wrong in the
+            # paper's methods section.
             "SWAY_MODEL": MODEL,
+            "SWAY_GPU": GPU,
         }
     )
     .add_local_python_source("swayambhu")
@@ -125,12 +133,17 @@ class Runner:
         v = self.torch.tensor(spec["vector"], dtype=self.torch.float32, device="cuda")
         if spec.get("mode", "add") == "ablate":
             return ablate(self.blocks, int(spec["layer"]), v)
+        mask = spec.get("row_mask")
+        if mask is not None:
+            mask = self.torch.tensor(mask, dtype=self.torch.float32, device="cuda")
         return steer(
             self.blocks,
             int(spec["layer"]),
             v,
             float(spec["alpha"]),
             spec.get("positions", "all"),
+            spec.get("relative", True),
+            mask,
         )
 
     # ---------- public API ----------
@@ -139,7 +152,7 @@ class Runner:
     def info(self) -> dict:
         return {
             "model": self.model_name,
-            "gpu": GPU,
+            "gpu": os.environ.get("SWAY_GPU", GPU),
             "block_path": self.block_path,
             "n_layers": self.n_layers,
             "d_model": self.d_model,

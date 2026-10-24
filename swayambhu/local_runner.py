@@ -111,9 +111,12 @@ class LocalRunner:
         v = self.torch.tensor(spec["vector"], dtype=self.torch.float32, device=self.device)
         if spec.get("mode", "add") == "ablate":
             return ablate(self.blocks, int(spec["layer"]), v)
+        mask = spec.get("row_mask")
+        if mask is not None:
+            mask = self.torch.tensor(mask, dtype=self.torch.float32, device=self.device)
         return steer(
             self.blocks, int(spec["layer"]), v, float(spec["alpha"]),
-            spec.get("positions", "all"),
+            spec.get("positions", "all"), spec.get("relative", True), mask,
         )
 
     def _chunks(self, n):
@@ -141,13 +144,19 @@ class LocalRunner:
         for lo, hi in self._chunks(len(chats)):
             if seed is not None:
                 self.torch.manual_seed(seed + lo)
+            # a row_mask is indexed against the FULL batch, so slice it to the
+            # chunk or the intervention lands on the wrong agents
+            spec = steering
+            if steering and steering.get("row_mask") is not None:
+                spec = dict(steering)
+                spec["row_mask"] = list(steering["row_mask"])[lo:hi]
             enc = self._encode(chats[lo:hi], suffix[lo:hi])
             kwargs = dict(max_new_tokens=max_new_tokens, pad_token_id=self.tok.pad_token_id)
             if temperature and temperature > 0:
                 kwargs.update(do_sample=True, temperature=temperature, top_p=0.95)
             else:
                 kwargs.update(do_sample=False)
-            with self.torch.no_grad(), self._intervention(steering):
+            with self.torch.no_grad(), self._intervention(spec):
                 out = self.model.generate(**enc, **kwargs)
             texts += self.tok.batch_decode(
                 out[:, enc["input_ids"].shape[1] :], skip_special_tokens=True
