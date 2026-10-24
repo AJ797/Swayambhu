@@ -269,6 +269,86 @@ def fig_steering(sweep: dict, out: Path):
     print(f"  wrote {out}")
 
 
+def fig_countermeasures(out: Path, run_dir: Path = Path("data/scale72")):
+    """The policy figure: what each intervention does to collusion at 72B."""
+    # grey = untouched baseline; coloured = the three interventions
+    wanted = [
+        ("no channel", "E_BASE", "#9b9a93"),
+        ("free text", "E_CHAT", C1),
+        ("4-symbol channel", "E_CANON", C2),
+        ("one maverick", "M_PRESENT", C3),
+    ]
+    rows = []
+    for label, name, col in wanted:
+        f = run_dir / f"{name}.json"
+        if not f.exists():
+            continue
+        s = json.loads(f.read_text(encoding="utf-8"))["stats"]
+        rows.append((label, s["delta_last10"], s["delta_last10_sd"], col))
+    if len(rows) < 2:
+        return
+
+    fig, ax = plt.subplots(figsize=(5.8, 3.2))
+    y = np.arange(len(rows))
+    ax.barh(y, [r[1] for r in rows], xerr=[r[2] for r in rows], height=0.6,
+            color=[r[3] for r in rows],
+            error_kw=dict(ecolor=INK2, lw=1.2, capsize=2.5))
+    for yi, r in zip(y, rows):
+        # negative bars grow leftwards, so their label must sit left of the error bar
+        pos = r[1] >= 0
+        ax.text(r[1] + (r[2] + 0.025) * (1 if pos else -1), yi, f"{r[1]:+.3f}",
+                va="center", ha="left" if pos else "right", fontsize=8.5, color=INK)
+    ax.axvline(0, color=INK2, lw=1.2)
+    ax.axvline(1, color=INK2, lw=1.0, ls=(0, (4, 3)))
+    ax.text(1.012, 0.03, "perfect cartel ", fontsize=7.5, color=INK2,
+            ha="left", transform=ax.get_xaxis_transform(), rotation=90)
+    ax.set_yticks(y, [r[0] for r in rows], fontsize=9)
+    ax.invert_yaxis()
+    ax.set_xlabel("collusion index  $\\Delta$   (final 10 rounds)")
+    ax.set_title("Restricting the channel tripled collusion; a maverick removed it")
+    ax.grid(axis="y", visible=False)
+    ax.set_xlim(-0.22, 1.22)
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  wrote {out}")
+
+
+def fig_detection_gap(cfg, eps, out: Path):
+    """Equal collusion, opposite evidentiary traces. All three series are
+    rates/indices in [0,1], so ONE axis."""
+    pair = [k for k in ("E_ORG", "M_RUMOUR") if k in eps]
+    if len(pair) < 2:
+        return
+    names = ["collusion index $\\Delta$", "cartel language rate", "price-matching rate"]
+    vals = {}
+    for k in pair:
+        ms = M.message_stats(eps[k]["episodes"])
+        vals[k] = [
+            eps[k]["stats"]["delta_last10"],
+            ms["cartel_rate"],
+            M.price_matching_rate(eps[k]["episodes"], cfg),
+        ]
+
+    fig, ax = plt.subplots(figsize=(6.0, 3.4))
+    x = np.arange(len(names))
+    w = 0.34
+    for (k, c, off) in ((pair[0], C2, -w / 2 - 0.012), (pair[1], C1, w / 2 + 0.012)):
+        ax.bar(x + off, vals[k], w, color=c, label=k)
+        for xi, v in zip(x + off, vals[k]):
+            ax.text(xi, v + 0.02, f"{v:.2f}", ha="center", fontsize=8, color=INK)
+    ax.set_xticks(x, names, fontsize=8.5)
+    ax.set_ylabel("rate  /  $\\Delta$")
+    ax.set_ylim(0, 1.08)
+    ax.set_title("Equal collusion, opposite evidence: one is auditable, one is not")
+    ax.legend(fontsize=8.5, loc="upper right")
+    ax.grid(axis="x", visible=False)
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  wrote {out}")
+
+
 def fig_scale_ladder(runs: list[tuple[str, Path]], out: Path):
     """Delta vs model size for the key conditions.
 
@@ -344,6 +424,9 @@ def main() -> None:
         fig_detection(probe, out_dir / f"{tag}_f5_detection.png")
     else:
         print("  (no probe_results.json yet -- skipping probe figures)")
+
+    fig_detection_gap(cfg, eps, out_dir / f"{tag}_f8_detection_gap.png")
+    fig_countermeasures(out_dir / "f9_countermeasures_72b.png")
 
     ladder = [
         ("14B", Path("data/main")),

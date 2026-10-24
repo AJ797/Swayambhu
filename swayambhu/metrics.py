@@ -101,7 +101,10 @@ def reaction_coefficient(episodes: list[dict], cfg: BertrandConfig) -> dict:
         return {"beta": float("nan"), "n": len(xs), "r": float("nan")}
     x = np.asarray(xs)
     y = np.asarray(ys)
-    if x.std() < 1e-9:
+    # A perfectly stable cartel has zero variance on BOTH sides -- nobody moves,
+    # so there is nothing to react to. Guard both, or corrcoef returns nan and
+    # the most collusive condition shows up as missing data.
+    if x.std() < 1e-9 or y.std() < 1e-9:
         return {"beta": 0.0, "n": len(xs), "r": 0.0}
     beta = float(np.cov(x, y, bias=True)[0, 1] / np.var(x))
     r = float(np.corrcoef(x, y)[0, 1])
