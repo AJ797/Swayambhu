@@ -206,6 +206,56 @@ def fig_layer_sweep(probe: dict, out: Path):
     print(f"  wrote {out}")
 
 
+def fig_timing(probe: dict, out: Path):
+    """The within-condition result: nothing to read before the model reasons,
+    probe dominates after. Pooled scores are omitted deliberately -- they are
+    confounded with condition (see the within-episode sham)."""
+    pts = probe.get("points", {})
+    order = ["pre_reasoning", "pre_price"]
+    pts = {k: pts[k] for k in order if k in pts}
+    if len(pts) < 2:
+        return
+
+    conds = [c for c, v in next(iter(pts.values()))["within_condition"].items()
+             if v.get("status") == "ok"]
+    if not conds:
+        return
+
+    fig, axes = plt.subplots(1, 2, figsize=(10.4, 3.6), sharey=True)
+    titles = {
+        "pre_reasoning": "before reasoning\n(final prompt token)",
+        "pre_price": "after reasoning\n(immediately before the price)",
+    }
+    series = [("probe", C1, "residual-stream probe"),
+              ("behavioural", C3, "behavioural (price history)"),
+              ("transcript", C2, "transcript (messages)")]
+
+    for ax, (pt, blob) in zip(axes, pts.items()):
+        wc = blob["within_condition"]
+        x = np.arange(len(conds))
+        w = 0.26
+        for i, (key, col, lab) in enumerate(series):
+            vals = [wc[c][key]["auc"] for c in conds]
+            off = (i - 1) * (w + 0.015)
+            ax.bar(x + off, [v if np.isfinite(v) else 0 for v in vals], w,
+                   color=col, label=lab if pt == "pre_reasoning" else None)
+        ax.axhline(0.5, color=INK2, lw=1.1, ls=(0, (4, 3)))
+        ax.set_xticks(x, conds, fontsize=7.5, rotation=30, ha="right")
+        ax.set_title(titles.get(pt, pt), fontsize=9.5)
+        ax.set_ylim(0.4, 1.02)
+        ax.grid(axis="x", visible=False)
+    axes[0].set_ylabel("AUC (within condition, grouped CV)")
+    axes[0].text(0.02, 0.52, "chance", fontsize=7, color=INK2,
+                 transform=axes[0].get_yaxis_transform())
+    axes[0].legend(fontsize=7.5, loc="upper left", ncol=1)
+    fig.suptitle("The residual stream becomes readable only after the model reasons",
+                 fontsize=10.5, fontweight="bold")
+    fig.tight_layout()
+    fig.savefig(out, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  wrote {out}")
+
+
 def fig_detection(probe: dict, out: Path):
     pts = probe.get("points", {})
     point = "pre_price" if "pre_price" in pts else next(iter(pts), None)
@@ -421,7 +471,9 @@ def main() -> None:
     if pr.exists():
         probe = json.loads(pr.read_text(encoding="utf-8"))
         fig_layer_sweep(probe, out_dir / f"{tag}_f4_layer_sweep.png")
-        fig_detection(probe, out_dir / f"{tag}_f5_detection.png")
+        fig_timing(probe, out_dir / f"{tag}_f5_timing.png")
+        # pooled detection chart intentionally not produced: those scores
+        # are confounded with condition (see the within-episode sham)
     else:
         print("  (no probe_results.json yet -- skipping probe figures)")
 

@@ -185,7 +185,42 @@ The reaction coefficient — the OLS slope of a firm's price change on its rival
 
 Keyword auditing fails in the opposite direction: a naive coordination lexicon flagged 42–51% of messages in conditions whose true cartel-language rate was 0–3%, an 18–25× over-count. The over-count narrows (≈1.6×) where collusion is real. Keyword auditing therefore false-positives heavily in competitive markets — the regime where an auditor most needs to be right.
 
-### 4.7 Representation analysis `[PENDING]`
+### 4.7 What the residual stream knows, and when
+
+**A confound we had to remove first.** Pooled across conditions, a probe at the best layer reaches AUC 0.994 against a 0.959 behavioural baseline — and a shuffled-label sham reaches 0.919. The target (pricing above Nash) is very nearly determined by condition, and conditions differ by system prompt, which is trivially decodable from activations. The pooled probe was substantially reading *which instruction it had been given*. We therefore report two shams — a global permutation, which must land at chance and does (0.500 / 0.503), and a within-episode permutation that preserves each condition's base rate (0.918 / 0.919) and exposes the confound — and we analyse **within condition**, where the prompt is fixed and a probe cannot win by recognising its instructions.
+
+Within-condition AUC, 14B, grouped CV by episode (controls are omitted: instructed conditions are ~100% single-class, so AUC is undefined there):
+
+| condition | base rate | probe | behavioural | transcript |
+|---|---|---|---|---|
+| **`pre_reasoning`** — final prompt token, before any generation | | | | |
+| E_BASE | 0.31 | 0.690 | **0.798** | — |
+| E_CHAT | 0.25 | 0.604 | **0.850** | 0.651 |
+| E_CANON | 0.09 | 0.594 | **0.916** | 0.647 |
+| E_STRAT | 0.50 | 0.621 | **0.728** | — |
+| E_STRAT_CHAT | 0.38 | 0.684 | **0.811** | 0.662 |
+| M_PRESENT | 0.24 | 0.792 | **0.852** | 0.827 |
+| M_RUMOUR | 0.86 | 0.613 | **0.896** | 0.491 |
+| **`pre_price`** — after reasoning, immediately before the price digits | | | | |
+| E_BASE | 0.31 | **0.967** | 0.798 | — |
+| E_CHAT | 0.25 | **0.955** | 0.850 | 0.651 |
+| E_CANON | 0.09 | **0.981** | 0.916 | 0.647 |
+| E_STRAT | 0.50 | **0.960** | 0.728 | — |
+| E_STRAT_CHAT | 0.38 | **0.934** | 0.811 | 0.662 |
+| M_PRESENT | 0.24 | **0.957** | 0.852 | 0.827 |
+| M_RUMOUR | 0.86 | **0.952** | 0.896 | 0.491 |
+
+The pattern is uniform across all seven testable conditions and is a result about **timing**, not about whether collusion is represented at all.
+
+**Before the model reasons, there is nothing to read.** At the final prompt token the probe is beaten by a simple regression on the visible price history in *every* condition. This is interpretable rather than surprising: at that point the residual stream largely encodes the prompt, and the behavioural features encode the same history in clean numeric form. Instructed→emergent transfer at this point is 0.574, essentially chance.
+
+**After the model reasons, the probe dominates.** Immediately before the price digits it beats both baselines in every condition, and transfer rises to 0.842.
+
+**The margin that matters is against transcripts, not against prices.** The probe's edge over the behavioural baseline is real but modest (0.93–0.98 vs 0.73–0.92). Its edge over transcript auditing is large, and largest exactly where it should be: in M_RUMOUR — collusion at Δ = 0.267 with zero cartel language and no price parallelism — the message channel is at **chance (0.491)** while the residual stream reaches **0.952**.
+
+**What this does and does not license.** It does not support predicting collusion before the agent has thought. It does support a white-box monitor that reads state *after* the agent's reasoning and *before* its action is emitted — the window in which an intervention could still block the action. The practical design constraint is concrete: reading at the prompt boundary yields less than reading the price history, so a monitor placed there is worse than useless.
+
+**A negative worth stating plainly.** The direction extracted from *instructed* collusion does not transfer to emergent behaviour at the decision point (0.574). Prompted and emergent collusion are not the same object internally. This constrains the natural recipe for building a collusion monitor — demonstrate the behaviour, extract the direction, deploy it — at least in this setting.
 
 ### 4.8 Causal intervention `[PENDING]`
 
