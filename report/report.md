@@ -3,9 +3,9 @@
 **Apart Research AI Collusion Research Sprint — October 2026**
 Primary track: 2 (Detection and Audit). Results bear directly on Track 1 (Markets, Q1.1 and Q1.5) and Track 3 (Carriers and Countermeasures, Q3.1 and Q3.2).
 
-> **STATUS:** all behavioural results below are final. Sections marked
-> `[PENDING]` await the representation analysis. Do not submit with
-> placeholders remaining.
+> **STATUS:** behavioural, probe, causal and geometry results are final.
+> Outstanding before submission: controls for the partner-trust direction,
+> citation details, and a page-count pass against the 8-page limit.
 
 ---
 
@@ -77,7 +77,7 @@ Factors: **objective** (neutral / instructed-collude / instructed-compete), **ch
 
 Main factorial: 12 conditions × 16 episodes × 24 rounds × 3 firms at 14B. Scale rungs: 4–6 conditions × 8 episodes × 24 rounds at 32B and 72B. A duopoly arm at n = 2. Instructed conditions run with the channel **off**, so they differ from the neutral no-channel condition in exactly one respect, which matters for §4.7.
 
-### 3.3 Representation capture `[PENDING]`
+### 3.3 Representation capture and intervention
 
 Residual-stream activations are captured at two points per turn — `pre_reasoning` (final prompt token, before generation) and `pre_price` (immediately before the price digits) — at every fourth layer. The block stack is located structurally rather than by module name. Probes are logistic regressions cross-validated **grouped by episode**, since turns within an episode share a price history and splitting on turns would leak. Steering doses are expressed as a fraction of the local residual norm, because residual norms vary by orders of magnitude with depth.
 
@@ -279,6 +279,19 @@ The shuffled control is the decisive one: identical norm, identical multiset of 
 | ablated, L40 | 154.3 | 159.0 | +4.7 | 96% |
 
 Under the intervention the agent prices roughly 30 points higher *and still raises its price when its cost rises*, with format compliance essentially intact. The induced behaviour is collusive pricing, not a degraded model.
+
+**A second, near-orthogonal direction is also causal, but weakly.** The partner-trust direction of §4.9 — extracted from first-person assessments of whether the other firms are dependable, and sitting at 84° to the collusion direction — also induces collusion when injected, monotonically and with the correct sign, but needs a larger dose and reaches far less far:
+
+| direction | best cell | Δ | real | random matched | shuffled | real/random |
+|---|---|---|---|---|---|---|
+| collusion | L40, α = 0.40 | 0.998 | +0.928 | +0.063 | +0.004 | **14.8×** |
+| partner-trust | L36, α = 0.60 | 0.266 | +0.195 | +0.071 | −0.016 | **2.8×** |
+
+Both clear their shuffled controls, so both effects depend on orientation. But the trust direction's margin over matched-norm random is 2.8× against the collusion direction's 14.8×, and at α = 0.60 the random control alone reaches +0.071, so generic perturbation contributes materially at that dose. We therefore report the trust direction as **causally relevant but substantially weaker**, not as an equivalent route.
+
+The Δ it reaches is worth one remark. Injecting partner-trust produces Δ = 0.266, against M_RUMOUR's behavioural Δ = 0.267 — the condition that tells agents a price-cutter may exist when none does. The agreement to three decimals is coincidence, but a candidate mechanism reproducing the effect size of the behavioural condition it was meant to explain is the kind of convergence worth recording.
+
+**Decodability and predictiveness do not track causal potency.** Taken with §4.9 this is the sharpest methodological point available from our data. The partner-trust variable is *more* linearly decodable than the collusion variable (Cohen's d 7.2 at L40) and a *better* predictor of realised collusion across emergent episodes (r = 0.634 vs 0.544) — yet it is roughly fivefold weaker causally. A probe that ranks features by how well they are encoded, or by how well they predict the outcome, would have selected the wrong one to intervene on.
 
 **Scope of the claim.** The intervention adds the direction at every sequence position, so it modifies how the model reads its own prompt as well as its decision state. The supported claim is that adding this direction throughout the forward pass makes the model behave as if instructed to collude — closer to activation-space prompt injection than to flipping an isolated decision variable. A position-restricted variant (injecting only at the final position) would license the stronger reading and is not yet run.
 

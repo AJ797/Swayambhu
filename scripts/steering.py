@@ -274,7 +274,12 @@ def main() -> None:
                 print(f"  {name:<16} {args.alpha:7.2f} {d:8.3f} "
                       f"{d - base['delta_all']:+10.3f}")
                 rows.append({"variant": name, "layer": L, "alpha": args.alpha,
-                             "delta": d, "d_vs_base": d - base["delta_all"]})
+                             "delta": d, "d_vs_base": d - base["delta_all"],
+                             # per-arm spread, so a real-vs-random gap can be
+                             # judged against variance rather than by eye
+                             "sd": st["delta_last10_sd"],
+                             "n_episodes": st["n_episodes"],
+                             "parse_fail": st["parse_failure_rate"]})
             results["baseline"] = base
             results["controls"] = rows
 
