@@ -299,7 +299,14 @@ def fig_steering(sweep: dict, out: Path):
     if not rows:
         return
     base = sweep.get("baseline", {}).get("delta_all")
-    layers = sorted({r["layer"] for r in rows})[:4]
+    # span the depth range rather than taking the first four: the shallow and
+    # deep layers behave differently and the contrast IS the result
+    all_layers = sorted({r["layer"] for r in rows})
+    if len(all_layers) <= 4:
+        layers = all_layers
+    else:
+        idx = sorted({0, len(all_layers) // 3, 2 * len(all_layers) // 3, len(all_layers) - 1})
+        layers = [all_layers[i] for i in idx]
     fig, ax = plt.subplots(figsize=(6.4, 3.4))
     for L, c in zip(layers, [C1, C2, C3, C4]):
         sub = sorted((r for r in rows if r["layer"] == L), key=lambda r: r["alpha"])
@@ -311,8 +318,11 @@ def fig_steering(sweep: dict, out: Path):
                 fontsize=7.5, color=INK2, va="bottom")
     ax.set_xlabel(r"steering dose $\alpha$  (fraction of local residual norm)")
     ax.set_ylabel("collusion index  $\\Delta$")
+    ax.axhline(1.0, color=INK2, lw=1.0, ls=(0, (2, 3)))
+    ax.text(0.99, 1.0, "perfect cartel ", transform=ax.get_yaxis_transform(),
+            fontsize=7.5, color=INK2, va="bottom", ha="right")
     ax.set_title("Dose-response: injecting the collusion direction")
-    ax.legend(fontsize=8)
+    ax.legend(fontsize=8, title="capture layer", title_fontsize=8, loc="upper left")
     fig.tight_layout()
     fig.savefig(out, bbox_inches="tight")
     plt.close(fig)

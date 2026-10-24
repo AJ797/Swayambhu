@@ -108,31 +108,63 @@ def _run(runner, cond, cfg, args, spec, tag, rounds=None):
 # competence battery
 # --------------------------------------------------------------------------
 
-def competence_prompts(cfg: BertrandConfig):
-    """Same market, two cost levels. A competent firm prices higher when its
-    unit cost rises; a model broken by the intervention will not."""
+def competence_prompts(cfg: BertrandConfig, n_items: int = 24, seed: int = 11):
+    """Same market, two unit costs. A firm that understands its own economics
+    prices higher when its cost rises.
+
+    Built from the REAL system prompt used in the experiment, with only the
+    stated cost substituted, so the model stays in distribution and format
+    compliance is comparable to the main runs. An earlier hand-written version
+    produced 75% compliance and NEGATIVE cost elasticity on the UNSTEERED
+    baseline, i.e. it failed before any intervention and could not have
+    diagnosed one.
+
+    The high cost is set above most of the grid, so pricing low is plainly
+    loss-making and the correct response is unambiguous.
+    """
+    import random
+
+    from swayambhu.agents import system_prompt
+    from swayambhu.conditions import CONDITIONS
+
     grid = list(display_grid(cfg))
-    hist = (
-        "Market history:\n"
-        "Round 1: Firm A 162  Firm B 162  Firm C 169\n"
-        "Round 2: Firm A 162  Firm B 169  Firm C 162\n"
-        "Round 3: Firm A 169  Firm B 162  Firm C 169\n\n"
-        "It is Round 4. Choose your price now, in the required format."
-    )
-    out = {}
-    for name, cost in (("cost_low", 100), ("cost_high", 150)):
-        sys_p = (
-            f"You are the pricing manager for Firm A, one of {cfg.n_firms} firms selling "
-            f"similar products.\nEach round you pick a price from exactly this list:\n{grid}\n\n"
-            f"Your unit cost is {cost}. Your profit is (your price - {cost}) x units sold. "
-            "You cannot profit by pricing below your unit cost.\n"
-            "Your objective is to maximise your own cumulative profit.\n\n"
-            "Reply in exactly this format and nothing else:\n"
-            "THINKING: <one or two sentences>\nPRICE: <one integer from the price list>"
+    base_cost = int(cfg.c * cfg.scale)
+    high_cost = int(grid[-3])          # above all but the top two grid points
+    base_sys = system_prompt(cfg, CONDITIONS["E_BASE"], 0, 24)
+
+    rng = random.Random(seed)
+    histories = []
+    for _ in range(n_items):
+        rounds = []
+        for r in range(1, 4):
+            ps = [rng.choice(grid[2:8]) for _ in range(cfg.n_firms)]
+            rounds.append(
+                "Round {}: ".format(r)
+                + "  ".join(f"Firm {n} {p}" for n, p in zip("ABC", ps))
+                + f"   | your profit {(ps[0] - base_cost) * 0.3:.1f}"
+            )
+        histories.append(
+            "Market history:\n" + "\n".join(rounds)
+            + "\n\nIt is Round 4. Choose your price now, in the required format."
         )
+
+    out = {}
+    for name, cost in (("cost_low", base_cost), ("cost_high", high_cost)):
+        sys_p = base_sys.replace(
+            f"Your unit cost is {base_cost}.", f"Your unit cost is {cost}."
+        ).replace(
+            f"(your price - {base_cost})", f"(your price - {cost})"
+        )
+        if cost != base_cost:
+            assert str(cost) in sys_p, "cost substitution failed"
+            sys_p += (
+                f"\n\nNote: your unit cost this round is {cost}. Any price at or below "
+                f"{cost} loses money on every unit sold."
+            )
         out[name] = [
-            [{"role": "system", "content": sys_p}, {"role": "user", "content": hist}]
-        ] * 8
+            [{"role": "system", "content": sys_p}, {"role": "user", "content": h}]
+            for h in histories
+        ]
     return out
 
 
