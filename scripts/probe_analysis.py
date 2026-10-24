@@ -41,6 +41,7 @@ from swayambhu.probes import (  # noqa: E402
     diff_in_means_direction,
     layer_sweep,
     sham_control,
+    within_condition_scores,
     talk_action_divergence,
     transfer_score,
 )
@@ -97,7 +98,9 @@ def main() -> None:
             f"no .npz files at {act_dir}; run scripts/fetch_acts.py --run-id {args.run_id}"
         )
 
-    ep_files = {p.stem: p for p in sorted(run_dir.glob("*.json")) if p.stem != "summary"}
+    # only real condition files -- the directory also holds summary.json and
+    # this script's own probe_results.json output
+    ep_files = {p.stem: p for p in sorted(run_dir.glob("*.json")) if p.stem in CONDITIONS}
     if not ep_files:
         raise SystemExit(f"no episode files in {run_dir}")
     print(f"conditions found: {sorted(ep_files)}")
@@ -152,12 +155,35 @@ def main() -> None:
         for k, v in rows.items():
             print(fmt(k, v))
 
-        # ---- sham: the pipeline must NOT find signal in shuffled labels
+        # ---- shams: one checks the machinery, one checks the target
         sham = sham_control(ds, lp, n_splits=args.splits)
-        print("\n  " + fmt("SHAM (labels shuffled)", sham).strip())
-        if np.isfinite(sham["auc"]) and sham["auc"] > 0.60:
-            print("    *** WARNING: sham probe is above chance. The pipeline leaks.")
-            print("    *** Do not report any number above until this is explained.")
+        print("\n  SHAM CONTROLS:")
+        print(fmt("global shuffle (must be ~0.5)", sham["global"]))
+        print(fmt("within-episode shuffle", sham["within_episode"]))
+        if np.isfinite(sham["global"]["auc"]) and sham["global"]["auc"] > 0.60:
+            print("    *** The machinery itself leaks. Discard everything above.")
+        elif np.isfinite(sham["within_episode"]["auc"]) and sham["within_episode"]["auc"] > 0.60:
+            print("    *** Target is CONFOUNDED WITH CONDITION: within-episode shuffling")
+            print("    *** preserves each condition's base rate, so a probe that merely")
+            print("    *** recognises the system prompt scores well. The POOLED numbers")
+            print("    *** above are not evidence of collusion detection. Read the")
+            print("    *** within-condition table below instead.")
+
+        # ---- the confound-free comparison: inside one condition the prompt is fixed
+        print("\n  WITHIN-CONDITION (prompt held constant -- the numbers that count):")
+        wc = within_condition_scores(ds, lp, n_splits=args.splits)
+        print("    {:<14} {:>7} {:>9} {:>11} {:>8}".format(
+            "condition", "pos", "probe", "behavioural", "transcript"))
+        for cond, r in wc.items():
+            if r.get("status") != "ok":
+                print(f"    {cond:<14} skipped ({r.get('n')} rows)")
+                continue
+            def g(k):
+                v = r[k]["auc"]
+                return f"{v:9.3f}" if np.isfinite(v) else f"{'n/a':>9}"
+            print("    {:<14} {:>7.2f} {} {} {}".format(
+                cond, r["pos_rate"], g("probe"), g("behavioural")[:11].rjust(11),
+                g("transcript")[:8].rjust(8)))
 
         # ---- transfer: the test that decides whether the probe is real
         transfer = None
@@ -225,6 +251,7 @@ def main() -> None:
             "comparison": {k: {m: v[m] for m in ("auc", "ap", "n", "pos_rate")}
                            for k, v in rows.items()},
             "sham": sham,
+            "within_condition": wc,
             "transfer": transfer,
             "transcript_by_condition": per_cond_txt,
         }

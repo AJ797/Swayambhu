@@ -295,7 +295,7 @@ def _dense_pipeline(n_features: int, n_train: int, C: float, n_components: int =
     if n_features > 512:
         k = int(min(n_components, n_features, max(2, n_train - 1)))
         steps.append(PCA(n_components=k, random_state=0))
-    steps.append(LogisticRegression(max_iter=1000, C=C))
+    steps.append(LogisticRegression(max_iter=5000, C=C))
     return make_pipeline(*steps)
 
 
@@ -304,16 +304,22 @@ def cv_score(X, y, groups, n_splits: int = 5, C: float = 1.0, text: bool = False
     n_splits = min(n_splits, len(np.unique(groups)))
     if n_splits < 2:
         return {"auc": float("nan"), "ap": float("nan"), "n": int(len(y)), "pos_rate": float("nan")}
+    if text and sum(bool(str(t).strip()) for t in X) < 20:
+        # conditions with the channel off have no message text at all
+        return {"auc": float("nan"), "ap": float("nan"), "n": int(len(y)),
+                "pos_rate": float(np.mean(y))}
     cv = GroupKFold(n_splits=n_splits)
     scores = np.zeros(len(y), dtype=float)
     for tr, te in cv.split(np.zeros(len(y)), y, groups):
         if text:
             model = make_pipeline(
-                TfidfVectorizer(ngram_range=(1, 2), min_df=2, max_features=20000),
+                TfidfVectorizer(ngram_range=(1, 2), min_df=1, max_features=20000),
                 LogisticRegression(max_iter=1000, C=C),
             )
             Xtr = [X[i] for i in tr]
             Xte = [X[i] for i in te]
+            if not any(str(t).strip() for t in Xtr):
+                continue
         else:
             model = _dense_pipeline(X.shape[1], len(tr), C)
             Xtr, Xte = X[tr], X[te]
@@ -365,17 +371,73 @@ def transfer_score(
 
 
 def sham_control(ds: Dataset, layer_pos: int, seed: int = 0, n_splits: int = 5) -> dict:
-    """Shuffled-label probe. Must land at chance, or the pipeline is leaking."""
+    """Two shams, because they diagnose different things.
+
+    `global`  -- labels permuted across the whole dataset. Destroys every
+                 structure including the condition. MUST land at chance; if it
+                 does not, the machinery itself is broken.
+
+    `within_episode` -- labels permuted inside each episode. This preserves
+                 each episode's (and therefore each CONDITION's) label base
+                 rate. A probe that merely recognises which condition a turn
+                 came from -- trivial, since conditions differ by system prompt
+                 -- still scores well here. So a high value is not a broken
+                 pipeline; it is evidence that the TARGET IS CONFOUNDED WITH
+                 CONDITION, and that pooled scores must not be read as
+                 "detects collusion".
+    """
+    X = ds.X_act[:, layer_pos, :].astype(np.float32)
+    out = {}
+
     rng = np.random.default_rng(seed)
+    r = cv_score(X, rng.permutation(ds.y), ds.groups, n_splits=n_splits)
+    r.pop("scores", None)
+    out["global"] = r
+
+    rng = np.random.default_rng(seed + 1)
     y = ds.y.copy()
-    # shuffle within episode so group structure is preserved
     for g in np.unique(ds.groups):
         m = ds.groups == g
         y[m] = rng.permutation(y[m])
-    X = ds.X_act[:, layer_pos, :].astype(np.float32)
     r = cv_score(X, y, ds.groups, n_splits=n_splits)
     r.pop("scores", None)
-    return r
+    out["within_episode"] = r
+    return out
+
+
+def within_condition_scores(
+    ds: Dataset, layer_pos: int, n_splits: int = 5, min_rows: int = 120
+) -> dict:
+    """The confound-free comparison.
+
+    Inside a single condition the system prompt is fixed, so a probe cannot win
+    by recognising which instruction it was given. Whatever separation survives
+    here is separation between turns that priced high and turns that did not,
+    under identical framing. These are the numbers worth reporting.
+    """
+    out = {}
+    for cond in sorted(set(ds.condition.tolist())):
+        m = ds.condition == cond
+        y, g = ds.y[m], ds.groups[m]
+        n_pos, n_neg = int(y.sum()), int((1 - y).sum())
+        if m.sum() < min_rows or min(n_pos, n_neg) < 20:
+            out[cond] = {"status": "skipped", "n": int(m.sum()),
+                         "n_pos": n_pos, "n_neg": n_neg,
+                         "pos_rate": float(y.mean()) if len(y) else float("nan")}
+            continue
+        k = min(n_splits, len(np.unique(g)))
+        probe = cv_score(ds.X_act[m][:, layer_pos, :].astype(np.float32), y, g, n_splits=k)
+        beh = cv_score(ds.X_beh[m], y, g, n_splits=k)
+        texts = [ds.text_msg[i] for i in np.where(m)[0]]
+        has_text = sum(bool(t.strip()) for t in texts) >= 20
+        txt = (cv_score(texts, y, g, n_splits=k, text=True)
+               if has_text else {"auc": float("nan"), "ap": float("nan"),
+                                 "n": int(m.sum()), "pos_rate": float(y.mean())})
+        for d in (probe, beh, txt):
+            d.pop("scores", None)
+        out[cond] = {"status": "ok", "probe": probe, "behavioural": beh,
+                     "transcript": txt, "pos_rate": float(y.mean())}
+    return out
 
 
 def diff_in_means_direction(
