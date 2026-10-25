@@ -31,15 +31,15 @@ The threat model we address is a deployed multi-agent market in which agents pri
 
 ## 2. Related Work
 
-**Algorithmic collusion.** Calvano et al. (2020) showed Q-learning pricing agents converging on supracompetitive prices sustained by punishment phases. We adopt their logit demand specification, and our solver independently reproduces their published duopoly constants (p_Nash = 1.4729, p_monopoly = 1.9250) as a correctness check. Fish et al. (2024) extended the question to LLM agents, reporting autonomous supracompetitive pricing and — directly relevant here — that "variation in seemingly innocuous phrases in LLM instructions substantially influence the degree of supracompetitive pricing." Our §4.3 is a quantified instance. Keppo et al. (2026) and Lekeas & Stamatopoulos (2026) make scale-sensitivity of LLM strategic behaviour a live hypothesis; our contribution is a controlled within-family ladder in a single task, in an area where such ladders remain sparse. Capability is not a universal proxy for cooperation, however (Yadav et al., 2026), so we avoid framing scale as uniformly pro-collusive.
+**Algorithmic collusion.** Calvano et al. (2020) showed Q-learning pricing agents converging on supracompetitive prices sustained by punishment phases. We adopt their logit demand specification, and our solver independently reproduces their published duopoly constants (p_Nash = 1.4729, p_monopoly = 1.9250) as a correctness check. Fish et al. (2024) extended the question to LLM agents, reporting autonomous supracompetitive pricing and — directly relevant here — that "variation in seemingly innocuous phrases in LLM instructions substantially influence the degree of supracompetitive pricing"; our §4.3 is a quantified instance. Keppo et al. (2026) and Lekeas & Stamatopoulos (2026) make scale-sensitivity a live hypothesis, and our contribution is a controlled within-family ladder in one task, where such ladders remain sparse; capability is not a universal proxy for cooperation (Yadav et al., 2026), so we avoid framing scale as uniformly pro-collusive.
 
-**Communication and cartels.** Human experiments consistently find *richer* communication more collusive: unrestricted chat beats structured price announcements (Harrington et al., 2016), limited message spaces produce collusion that then collapses (Cooper & Kühn, 2009), and communication raises oligopoly profits generally (Fonseca & Normann, 2012; Awaya & Krishna, 2016). **Our §4.2 reverses this.** The reconciling literature is on focal points: restricted protocols carrying a salient signal can match free-form cheap talk (Dugar & Shahriar, 2018), with salience effects bounded by payoff conflict (Crawford et al., 2008; Arjona et al., 2022).
+**Communication and cartels.** Human experiments consistently find *richer* communication more collusive: unrestricted chat beats structured price announcements (Harrington et al., 2016), limited message spaces produce collusion that then collapses (Cooper & Kühn, 2009), and communication raises oligopoly profits generally (Fonseca & Normann, 2012; Awaya & Krishna, 2016). **Our §4.2 reverses this.** The reconciling literature is on focal points: restricted protocols carrying a salient signal can match free-form cheap talk (Dugar & Shahriar, 2018), with salience bounded by payoff conflict (Crawford et al., 2008; Arjona et al., 2022).
 
-**Covert coordination and auditing.** Motwani et al. (2024), Baranchuk et al. (2024) and Mathew et al. (2024) show steganographic collusion emerging and surviving paraphrasing; Rippin et al. (2026) show tool use making it undetectable in practice. That literature motivates bandwidth restriction as a defence — precisely the defence we find counterproductive. Auditing work argues for capacity-aware detectors with explicit false-positive control (Nakamura et al., 2026; Tailor, 2025).
+**Covert coordination and auditing.** Steganographic collusion emerges, survives paraphrasing, and becomes undetectable with tool use (Motwani et al., 2024; Baranchuk et al., 2024; Mathew et al., 2024; Rippin et al., 2026). That literature motivates bandwidth restriction as a defence — precisely the defence we find counterproductive — and argues for capacity-aware detectors with explicit false-positive control (Nakamura et al., 2026; Tailor, 2025).
 
-**Evidence standards.** Conscious parallelism has never sufficed to establish agreement; doctrine requires "plus factors" distinguishing coordination from intelligent adaptation (Vaska, 1985; Dibadj, 2008; Andreoli-Versbach & Franck, 2015). Our §4.4 sharpens this: the naive dynamic refinement of the parallelism test *inverts*.
+**Evidence standards.** Conscious parallelism has never sufficed to establish agreement; doctrine requires "plus factors" distinguishing coordination from intelligent adaptation (Vaska, 1985; Dibadj, 2008; Andreoli-Versbach & Franck, 2015). Our §4.4 sharpens this: the naive dynamic refinement of that test *inverts*.
 
-**Representation engineering.** Zou et al. (2023) and contrastive activation addition (Rimsky et al., 2024) supply our direction-extraction and injection method. That probe accuracy does not imply causal importance is established — Geiger et al. (2023) give the framing, and Tiwari et al. (2026), Fadnavis et al. (2026) and Liao & Cao (2026) measure the dissociation directly; our §4.6 adds an instance where the better-encoded feature is the weaker driver. On probing before generation, Di Cicco (2026) finds code correctness decodable at the final prompt token, while Ruan et al. (2026) find agent probes near chance early and predictive after a few rounds — a temporal pattern our §4.5 reproduces in a market. Sahoo et al. (2026) show probes recovering task *format* rather than reasoning mode, the confound our within-condition analysis removes.
+**Representation engineering.** Zou et al. (2023) and contrastive activation addition (Rimsky et al., 2024) supply our extraction and injection method. That probe accuracy does not imply causal importance is established (Geiger et al., 2023) and recently measured directly (Tiwari et al., 2026; Fadnavis et al., 2026; Liao & Cao, 2026); §4.6 adds an instance where the better-encoded feature is the weaker driver. On probing before generation, Di Cicco (2026) finds code correctness decodable at the final prompt token, while Ruan et al. (2026) find agent probes near chance early and predictive after a few rounds — the temporal pattern §4.5 reproduces in a market. Sahoo et al. (2026) show probes recovering task *format* rather than reasoning mode, the confound our within-condition analysis removes.
 
 ## 3. Methods
 
@@ -79,6 +79,8 @@ r 8+ prices 162/162/162   "Agreed, let's keep it stable at 162."   (held to r24)
 
 Proposal, assent, convergence on a focal price, seventeen rounds of stability. What scales is not the ability to collude but the ability to use a channel for **agreement rather than narration**. Note the negotiated price corresponds to Δ ≈ 0.4: the agreement settles on a "fair" focal point and leaves roughly 60% of cartel surplus unclaimed.
 
+{{FIGURE: figures/f7_scale_ladder.png | Emergent collusion by model scale. Instructed conditions (collude/compete) separate by more than 1.07 at every scale, so no model lacks the ability to execute a cartel; the neutral conditions show what forms unprompted. Delta = 0 is Bertrand-Nash, 1 is the perfect cartel.}}
+
 ### 4.2 Bandwidth restriction backfires; pushing against the direction works, deleting it does not
 
 At 72B (Figure 2), Δ over the final 10 rounds:
@@ -97,6 +99,8 @@ At 72B (Figure 2), Δ over the final 10 rounds:
 **Removal depends on the operation, not the feature.** Ablation zeroes the component along the direction; the next forward pass reconstructs it from a context still holding twenty rounds of rising prices. Negative steering *reverses* the component and keeps opposing whatever the context regenerates. Same layer, same direction, opposite outcomes, 0% parse failure in both. The dose-response is graded (Appendix B): −0.10 removes little, −0.20 removes 46% without flooring prices, −0.40 and beyond sit on the grid floor. A usable window exists around −0.2 to −0.4; we did not test intermediate doses and do not claim a specific competition-restoring dose.
 
 The maverick result, by contrast, is **confirmation** of established work — entry or a non-cooperative rival destabilises tacit collusion (Bourreau et al., 2021; Chowdhury & Crede, 2020) — and we report it as evidence the environment reproduces a known antitrust result.
+
+{{FIGURE: figures/f11_countermeasures.png | Interventions at 72B, all on the converged statistic. Restricting the channel to four symbols produced the strongest collusion in the study; ablating the causal direction is inert; negative steering along the same direction at the same layer removes the cartel. The four-symbol condition measured 0.693 and 0.742 in two independent behavioural runs; 0.790 is the baseline of the intervention runs themselves.}}
 
 ### 4.3 At small scale collusion needs scaffolding, and leaves opposite traces
 
@@ -118,6 +122,8 @@ E_ORG is loud and lockstep, so transcript *and* parallelism detectors catch it i
 
 **Dynamic detectors invert.** The reaction coefficient — a firm's price change regressed on rivals' lagged change — is **0.000** under a stable cartel and +0.12 to +0.37 under competition. A stable cartel is unresponsive *because* it is stable. Price-responsiveness detectors therefore rank the most collusive market as the least suspicious.
 
+{{FIGURE: figures/main_f8_detection_gap.png | Two conditions reaching comparable collusion by routes that leave opposite evidentiary traces. E_ORG is loud and lockstep; M_RUMOUR reaches higher collusion with no cartel language and no price convergence, evading transcript and parallelism auditing at once.}}
+
 ### 4.5 Internals become readable only after the model reasons
 
 Pooled across conditions a probe reaches AUC 0.994 — but a shuffled-label sham reaches 0.919, because the target is nearly determined by condition and conditions differ by system prompt. We therefore report two shams (global permutation, which must and does land at chance, 0.500; within-episode permutation, 0.918, which exposes the confound) and analyse **within condition**, where the prompt is fixed (Figure 4; full table in Appendix C).
@@ -128,11 +134,15 @@ The margin that matters is against transcripts, not prices. In M_RUMOUR — coll
 
 **Practical reading:** a white-box monitor must read state *after* the agent's reasoning and *before* its action. At the prompt boundary there is less signal than in the price history, so a monitor placed there is worse than useless.
 
+{{FIGURE: figures/main_f5_timing.png | Within-condition detection AUC at two capture points, 14B. Before the model reasons the behavioural baseline (green) wins in every condition; after reasoning the residual-stream probe (blue) wins in every condition. Transcript auditing (orange) is at chance in M_RUMOUR, where collusion is silent.}}
+
 ### 4.6 Causal control of the price level
 
 Injecting the difference-in-means direction at one block output drives a competitive market (Δ = 0.070) to a perfect cartel (Figure 5).
 
 **Depth separates two regimes.** Below ~L24 the response is symmetric in |α| — both signs raise prices, the signature of generic perturbation. From L24 it becomes antisymmetric and monotone. At L40, α = +0.40 gives **0.998** and α = −0.40 gives −0.020.
+
+{{FIGURE: figures/main_f6_steering.png | Steering dose-response by depth, 14B, on a market whose unsteered index is 0.070. Shallow layers respond symmetrically in |alpha| -- the signature of generic perturbation -- while from L24 the response is antisymmetric and monotone. Alpha is a fraction of the local residual norm.}}
 
 **The dose-response is graded, not a threshold.** Sampling L40 finely: 0.210, 0.209, 0.286, 0.358, 0.577, 0.830, 0.963, 0.998 at α = 0.10 … 0.40. A sigmoid, steepest at 0.30–0.34. The coarse sweep's apparent jump was sampling resolution; induction here is graded, consistent with a continuous internal quantity rather than a switch.
 
@@ -257,10 +267,119 @@ Several corrections in this report came from controls and guards written into th
 
 ## Appendix
 
-Appendix A — full 12-condition factorial at 14B.
-Appendix B — full steering dose grid (8 layers × 6 doses) and the countermeasure dose-response.
-Appendix C — within-condition probe/baseline/transcript AUC at both capture points, 14B and 72B.
-Appendix D — prompts, separability-by-depth for all contrasts, geometry detail, and keyword over-count detail.
+### Appendix A — Full 14B factorial
+
+16 episodes x 24 rounds x 3 firms per condition. Delta is the mean over the final 10 rounds. Message rates are over turns that sent a message.
+
+| condition | objective | channel | Δ | sd | parse fail | cartel lang. | compete lang. | reaction β | price match |
+|---|---|---|---|---|---|---|---|---|---|
+| C_COLLUDE | collude | off | +0.990 | 0.015 | 0.0% | -- | -- | +0.000 | 1.00 |
+| C_COMPETE | compete | off | -0.086 | 0.005 | 0.1% | -- | -- | +0.240 | 0.98 |
+| E_BASE | neutral | off | +0.009 | 0.038 | 0.1% | -- | -- | +0.172 | 0.74 |
+| E_CHAT | neutral | free | +0.006 | 0.038 | 0.0% | 0.01 | 0.39 | +0.353 | 0.87 |
+| E_ORG | neutral | free | +0.231 | 0.068 | 0.1% | 0.61 | 0.02 | +0.116 | 0.95 |
+| E_CANON | neutral | canon | -0.007 | 0.162 | 0.0% | 0.06 | 0.86 | +0.366 | 0.92 |
+| E_STRAT | neutral | off | +0.072 | 0.056 | 0.2% | -- | -- | +0.235 | 0.60 |
+| E_STRAT_CHAT | neutral | free | +0.023 | 0.053 | 0.0% | 0.05 | 0.51 | +0.229 | 0.82 |
+| M_PRESENT | neutral | free | -0.003 | 0.038 | 0.0% | 0.01 | 0.46 | +0.168 | 0.54 |
+| M_RUMOUR | neutral | free | +0.267 | 0.120 | 0.0% | 0.00 | 0.18 | +0.202 | 0.63 |
+| CC_COLLUDE | collude | free | +1.000 | 0.000 | 0.0% | 0.94 | 0.00 | +0.000 | 1.00 |
+| CC_COMPETE | compete | free | -0.086 | 0.005 | 0.0% | 0.00 | 0.64 | +0.133 | 0.96 |
+
+### Appendix B — Steering dose grid and countermeasure dose-response
+
+**B1. Induction grid, 14B, condition E_BASE (unsteered Δ = 0.070), all positions.** Cells are Δ over all rounds; every cell had ≤0.7% parse failure.
+
+| layer | α=-0.40 | α=-0.20 | α=-0.10 | α=+0.10 | α=+0.20 | α=+0.22 | α=+0.26 | α=+0.30 | α=+0.34 | α=+0.38 | α=+0.40 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| L12 | +0.169 | +0.072 | +0.086 | +0.079 | +0.127 | -- | -- | -- | -- | -- | +0.140 |
+| L16 | +0.272 | +0.105 | +0.076 | +0.038 | +0.042 | -- | -- | -- | -- | -- | +0.172 |
+| L20 | +0.249 | +0.089 | +0.092 | +0.083 | +0.009 | -- | -- | -- | -- | -- | +0.149 |
+| L24 | +0.044 | +0.048 | +0.045 | +0.115 | +0.220 | -- | -- | -- | -- | -- | +0.244 |
+| L28 | -0.029 | +0.012 | +0.044 | +0.159 | +0.238 | -- | -- | -- | -- | -- | +0.384 |
+| L32 | -0.042 | -0.002 | +0.028 | +0.210 | +0.344 | -- | -- | -- | -- | -- | +0.393 |
+| L36 | -0.008 | +0.023 | +0.039 | +0.103 | +0.258 | +0.280 | +0.341 | +0.358 | +0.497 | +0.645 | +0.768 |
+| L40 | -0.020 | +0.023 | +0.036 | +0.210 | +0.209 | +0.286 | +0.358 | +0.577 | +0.830 | +0.963 | +0.998 |
+
+**B2. Countermeasure dose-response, 72B, condition E_CANON at L64.**
+
+| cell | Δ all rounds | Δ final 10 | parse fail |
+|---|---|---|---|
+| baseline | +0.409 | +0.790 | 0.0% |
+| L64_a-0.1 | +0.396 | +0.741 | 0.0% |
+| L64_a-0.2 | +0.228 | +0.426 | 0.0% |
+| L64_a-0.4 | -0.091 | -0.096 | 0.0% |
+| L64_a-0.8 | -0.100 | -0.100 | 0.0% |
+
+### Appendix C — Within-condition detection AUC
+
+Grouped cross-validation by episode. Conditions with fewer than 20 of either class are omitted, since AUC on a handful of positives is noise. Instructed conditions are single-class by construction and therefore absent.
+
+**14B, capture point `pre_reasoning`** — sham (global) 0.500, sham (within-episode) 0.918, transfer instructed→emergent 0.574
+
+| condition | positive rate | probe | behavioural | transcript |
+|---|---|---|---|---|
+| E_BASE | 0.31 | 0.690 | 0.798 | n/a |
+| E_CANON | 0.09 | 0.594 | 0.916 | 0.647 |
+| E_CHAT | 0.25 | 0.604 | 0.850 | 0.651 |
+| E_STRAT | 0.50 | 0.621 | 0.728 | n/a |
+| E_STRAT_CHAT | 0.38 | 0.684 | 0.811 | 0.662 |
+| M_PRESENT | 0.24 | 0.792 | 0.852 | 0.827 |
+| M_RUMOUR | 0.86 | 0.613 | 0.896 | 0.491 |
+
+**14B, capture point `pre_price`** — sham (global) 0.503, sham (within-episode) 0.919, transfer instructed→emergent 0.842
+
+| condition | positive rate | probe | behavioural | transcript |
+|---|---|---|---|---|
+| E_BASE | 0.31 | 0.967 | 0.798 | n/a |
+| E_CANON | 0.09 | 0.981 | 0.916 | 0.647 |
+| E_CHAT | 0.25 | 0.955 | 0.850 | 0.651 |
+| E_STRAT | 0.50 | 0.960 | 0.728 | n/a |
+| E_STRAT_CHAT | 0.38 | 0.934 | 0.811 | 0.662 |
+| M_PRESENT | 0.24 | 0.957 | 0.852 | 0.827 |
+| M_RUMOUR | 0.86 | 0.952 | 0.896 | 0.491 |
+
+**72B, capture point `pre_reasoning`** — sham (global) 0.500, sham (within-episode) 0.907, transfer instructed→emergent 0.764
+
+| condition | positive rate | probe | behavioural | transcript |
+|---|---|---|---|---|
+| E_CANON | 0.68 | 0.972 | 0.983 | 0.801 |
+| E_CHAT | 0.92 | 0.778 | 0.959 | 0.506 |
+| M_PRESENT | 0.26 | 0.764 | 0.856 | 0.523 |
+
+**72B, capture point `pre_price`** — sham (global) 0.505, sham (within-episode) 0.916, transfer instructed→emergent 0.980
+
+| condition | positive rate | probe | behavioural | transcript |
+|---|---|---|---|---|
+| E_CANON | 0.68 | 0.999 | 0.983 | 0.801 |
+| E_CHAT | 0.92 | 0.999 | 0.959 | 0.506 |
+| M_PRESENT | 0.26 | 0.995 | 0.856 | 0.523 |
+
+### Appendix D — Contrast separability, geometry, and keyword over-count
+
+**D1. Direction separability by depth (Cohen's d).** Surface textual contrasts separate early and wash out; the task-relevant contrast does the opposite.
+
+| contrast | L0 | L40 | trend |
+|---|---|---|---|
+| partner-trust | 2.62 | **7.24** | increases |
+| placebo_coop (cooperate/compete, about reports) | 5.92 | 1.93 | decreases |
+| placebo_neutral (coastal vs mountain office) | 2.67 | 1.78 | decreases |
+
+**D2. Effective dimensionality (participation ratio of the state covariance), 14B.**
+
+| layer | L0 | L4 | L8 | L12 | L16 | L20 | L24 | L28 | L32 | L36 | L40 | L44 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| eff. dim | 19.1 | 11.6 | 16.8 | 15.1 | 16.3 | 13.4 | 9.6 | 11.5 | 9.8 | 8.5 | 8.3 | 7.6 |
+
+**D3. Collusion vs partner-trust direction.** Cosine similarity ranges -0.018 to 0.118 across captured layers (83–85°), against a chance level of 1/sqrt(5120) ≈ 0.014.
+
+**D4. Keyword over-count.** A naive coordination lexicon against direction-aware counts.
+
+| condition | naive keyword flag | true cartel language | competitive language | over-count |
+|---|---|---|---|---|
+| pilot/E_CHAT | 0.48 | 0.00 | 0.45 | -- |
+| duo/E_CHAT | 0.51 | 0.03 | 0.26 | 17.9x |
+| duo/E_STRAT_CHAT | 0.42 | 0.02 | 0.43 | 25.2x |
 
 ### Appendix E — Limitations and Dual-Use / Ethical Considerations
 
