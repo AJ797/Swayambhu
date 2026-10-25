@@ -296,12 +296,23 @@ def main() -> None:
             _, base = _run(runner, acond, cfg, args, None, "baseline")
             spec = {"layer": L, "vector": unit(dirs[L]), "mode": "ablate"}
             _, abl = _run(runner, acond, cfg, args, spec, f"ablate_L{L}")
-            print(f"\n{args.ablate_condition}:")
-            print(f"  baseline      delta={base['delta_all']:+.3f}")
-            print(f"  ablated L{L}  delta={abl['delta_all']:+.3f} "
-                  f"({abl['delta_all'] - base['delta_all']:+.3f})")
-            print(f"  parse failure: {base['parse_failure_rate']:.1%} -> "
-                  f"{abl['parse_failure_rate']:.1%}")
+            # Report BOTH statistics. E_CANON is a ratchet that climbs over
+            # ~20 rounds, so delta_all averages in the pre-cartel phase and
+            # understates the end state; delta_last10 is the right measure of
+            # whether a cartel formed. Reporting only the mean, over too few
+            # rounds, makes an ablation look like it changed something when the
+            # cartel had not yet formed in either arm.
+            print(f"\n{args.ablate_condition}:  ({args.rounds} rounds)")
+            print(f"  {'':<14}{'delta_all':>11}{'delta_last10':>14}{'sd':>8}{'fail':>8}")
+            for lab, st in (("baseline", base), (f"ablated L{L}", abl)):
+                print(f"  {lab:<14}{st['delta_all']:>+11.3f}{st['delta_last10']:>+14.3f}"
+                      f"{st['delta_last10_sd']:>8.3f}{st['parse_failure_rate']:>8.1%}")
+            print(f"  {'effect':<14}{abl['delta_all'] - base['delta_all']:>+11.3f}"
+                  f"{abl['delta_last10'] - base['delta_last10']:>+14.3f}")
+            if base["delta_last10"] < 0.3:
+                print("\n  WARNING: baseline collusion is low, so there is little to")
+                print("  break and this is a weak test of ablation as a countermeasure.")
+                print("  Re-run with more rounds against a condition that actually colludes.")
             results["ablate"] = {"layer": L, "baseline": base, "ablated": abl}
 
         elif args.phase == "bank":

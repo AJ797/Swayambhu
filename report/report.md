@@ -297,7 +297,28 @@ The Δ it reaches is worth one remark. Injecting partner-trust produces Δ = 0.2
 
 **Scope of the claim.** The intervention adds the direction at every sequence position, so it modifies how the model reads its own prompt as well as its decision state. Note that this is *broader* than Contrastive Activation Addition as published (Rimsky et al., 2024), which adds the vector at token positions after the user's prompt. The supported claim is therefore that adding this direction throughout the forward pass makes the model behave as if instructed to collude — closer to activation-space prompt injection than to flipping an isolated decision variable. Position-restricted variants (CAA-standard generated-positions-only, and final-position-only) would license progressively stronger readings; the implementation supports all three and the restricted runs are reported where available.
 
-A further caveat: the direction is extracted from conditions that differ by system-prompt wording, so it may partly encode that wording rather than an abstract collusion variable. The random and shuffled controls rule out magnitude effects but not this; a semantically matched placebo contrast is the appropriate additional control and is left to future work.
+**Semantically matched placebos.** The random and shuffled controls rule out magnitude effects but not the objection that the direction encodes *prompt wording*, since it is extracted from conditions that differ by system-prompt text. We therefore built two placebo contrasts of comparable textual difference (within 15 characters of the real contrast) and steered with them at the same layers and doses:
+
+| direction | best effect vs baseline |
+|---|---|
+| collusion | **+0.928** |
+| partner-trust | +0.195 |
+| `placebo_coop` — identical cooperate-vs-compete framing, about filing reports | **+0.089** |
+| `placebo_neutral` — coastal vs mountain head office | **+0.071** |
+| matched-norm random | +0.063 |
+| dimension-shuffled | +0.004 |
+
+Both placebos fall inside the random-control band. `placebo_coop` is the informative one: it carries the *same* cooperate-versus-compete semantics as the instructed conditions and differs only in domain, yet produces no price collusion. The direction is therefore neither a generic cooperate/compete axis nor an artefact of prompt wording.
+
+**A separability signature distinguishes variables from wording.** Cohen's d for the contrast, by depth:
+
+| contrast | L0 | L40 | trend |
+|---|---|---|---|
+| partner-trust | 2.62 | **7.24** | increases |
+| `placebo_coop` | 5.92 | 1.93 | decreases |
+| `placebo_neutral` | 2.67 | 1.78 | decreases |
+
+Surface textual contrasts are most separable early, where representations are closer to lexical, and wash out with depth. The task-relevant contrast does the opposite. This gives a cheap diagnostic for telling a represented variable from a wording artefact, independent of any causal test.
 
 ### 4.9 Representation geometry
 
