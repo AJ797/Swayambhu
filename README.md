@@ -196,7 +196,11 @@ The probe trains on the labelled (instructed) conditions and is tested on the em
 
 Models: `Qwen/Qwen2.5-{14B,32B,72B}-Instruct`, bf16, A100-80GB (×4 for 72B), temperature 0.7.
 
-**Data.** `data/` is gitignored, so raw trajectories and activation tensors are not in this repository. Activations are ≈5 GB and are reproducible from the capture scripts above. Everything in the paper regenerates from the commands in this table.
+**Data.** `data/` is committed — 26 MB across 22 run directories: every episode trajectory as JSON (including failed and unparseable turns), the run logs under `data/logs/`, and the eight extracted direction vectors.
+
+The directions are the part that matters. Extracting them is the GPU-expensive step, so with `data/main/direction_pre_price.npy`, `direction_trust.npy`, the two placebos and the 72B pair in `data/cap72/` already in hand, every steering and ablation result in §4.2 and §4.6 reruns from the commands above without re-capturing anything.
+
+Activation tensors themselves (≈5 GB, `data/activations_*/`) are excluded and are reproducible from the capture scripts.
 
 ---
 
