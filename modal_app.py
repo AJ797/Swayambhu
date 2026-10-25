@@ -140,13 +140,15 @@ class Runner:
 
         if not spec:
             return contextlib.nullcontext()
-        v = self.torch.tensor(spec["vector"], dtype=self.torch.float32, device="cuda")
+        # dispatch on mode BEFORE touching spec["vector"]: a bank spec carries
+        # "bank" and no "vector", so extracting it first raises KeyError
         if spec.get("mode") == "bank":
             bank = self.torch.tensor(spec["bank"], dtype=self.torch.float32, device="cuda")
             return steer_bank(
                 self.blocks, int(spec["layer"]), bank, float(spec["alpha"]),
-                float(spec.get("tau", 1.0)), spec.get("gate", "softmax"),
+                float(spec.get("tau", 0.05)), spec.get("gate", "softmax"),
             )
+        v = self.torch.tensor(spec["vector"], dtype=self.torch.float32, device="cuda")
         if spec.get("mode", "add") == "ablate":
             return ablate(self.blocks, int(spec["layer"]), v)
         mask = spec.get("row_mask")

@@ -112,6 +112,11 @@ def _run(runner, cond, cfg, args, spec, tag, rounds=None):
         verbose=False,
     )
     stats["tag"] = tag
+    # persist trajectories: without them a single-agent run cannot be
+    # decomposed into the steered firm versus the untouched ones, which
+    # is the whole question that experiment asks
+    out = Path("data") / args.run_id / f"episodes_{tag.replace('/','_')}.json"
+    save_episodes(eps, stats, cfg, out)
     return eps, stats
 
 
