@@ -370,6 +370,22 @@ The steered agent goes to the cartel price, as expected. The result is the other
 
 This is the paper's most deployment-relevant finding. It also narrows what a defender must assume: in a market of three LLM agents, compromising the internals of one is sufficient to raise prices across the market, and the two honest agents' behaviour is not evidence that they are uncompromised.
 
+**It replicates at 72B, and over-steering is self-defeating.** Repeating the experiment at 72B on E_BASE at L64 (8 episodes, final 8 rounds):
+
+| | baseline | α = 0.40 | α = 0.60 |
+|---|---|---|---|
+| steered firm 0 | +0.123 | +0.709 | **+1.008** |
+| untouched firm 1 | +0.100 | +0.384 | +0.237 |
+| untouched firm 2 | +0.094 | +0.373 | +0.209 |
+| **untouched pair** | +0.097 | **+0.379** | +0.223 |
+| whole market | +0.106 | +0.489 | +0.485 |
+
+Capture is stronger at 72B than at 14B — the untouched pair reaches 0.379 against 0.201 — which is consistent with the scale result of §4.1: larger models follow a peer more readily.
+
+The non-monotonicity is the more interesting part. At α = 0.60 the steered agent prices *higher* (1.008, essentially the cartel price) yet the untouched agents rise *less* (0.223 versus 0.379). The economics are straightforward: a firm that raises its price to the monopoly level simply donates market share, and its rivals' best response is to undercut rather than to match. A firm pricing moderately high is followed.
+
+The attack therefore has an **interior optimum** — the most effective compromise is not the strongest one. For a threat model this cuts both ways: it bounds the damage a maximally-compromised agent can do, but it also means an attacker who tunes for market effect rather than for their own price is harder to spot, because their agent never prices conspicuously.
+
 **A gated bank of directions does not beat the best single direction.** Following the intuition that a token-conditional mixture should outperform one global vector, we ran a softmax-gated bank over {collusion, partner-trust} and, as a control, a uniform-gated mixture, at matched layer and dose:
 
 | arm (L40, α = 0.40) | Δ |
