@@ -52,7 +52,7 @@ def parse_args():
                     required=True)
     ap.add_argument("--directions", nargs="*", default=None,
                     help="bank phase: two or more direction .npy files")
-    ap.add_argument("--positions", choices=["all", "last"], default="all",
+    ap.add_argument("--positions", choices=["all", "generated", "last"], default="all",
                     help="'all' adds the vector at every sequence position "
                          "(activation-space prompt injection); 'last' adds it "
                          "only at the final position, which is the stronger "

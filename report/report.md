@@ -42,7 +42,9 @@ We study a repeated Bertrand oligopoly, the setting where algorithmic collusion 
 
 *(verify citation details before submission)*
 
-**Algorithmic collusion.** Calvano, Calzolari, Denicolò and Pastorello (2020) showed Q-learning pricing agents learning collusive strategies with punishment phases under logit demand. We adopt their demand specification; our solver independently reproduces their published duopoly constants (p_Nash = 1.4729, p_monopoly = 1.9250), which we use as a correctness check on the environment. Fish, Gonczarowski and Shorrer (2024) extended the question to LLM pricing agents with frontier models. Our scale ladder helps reconcile their positive findings with the competitive behaviour we observe at small scale.
+**Algorithmic collusion.** Calvano, Calzolari, Denicolò and Pastorello (2020, AER 110(10)) showed Q-learning pricing agents converging on supracompetitive prices sustained by punishment phases followed by gradual return to cooperation, under logit demand. We adopt their demand specification; our solver independently reproduces their published duopoly constants (p_Nash = 1.4729, p_monopoly = 1.9250), which we use as a correctness check on the environment. Their argument that such tacit collusion falls outside antitrust practice aimed at explicit agreements is the policy backdrop for our §4.5.
+
+Fish, Gonczarowski and Shorrer (2024, arXiv:2404.00806) extended the question to LLM pricing agents, reporting that they reach supracompetitive prices autonomously, and — directly relevant here — that *"variation in seemingly innocuous phrases in LLM instructions substantially influence the degree of supracompetitive pricing."* Our §4.4 is a quantified instance of exactly that sensitivity: one sentence permitting the firms to organise the market moves Δ from 0.009 to 0.231, and a false warning that a price-cutter exists moves it to 0.267. Our scale ladder (§4.1) also helps reconcile their frontier-model positives with the competitive behaviour we observe at 14B.
 
 **Covert coordination.** Work on steganographic and secret collusion between models motivates bandwidth restriction as a defence. Our canonical-channel result argues that this defence can be actively counterproductive.
 
@@ -293,7 +295,7 @@ The Δ it reaches is worth one remark. Injecting partner-trust produces Δ = 0.2
 
 **Decodability and predictiveness do not track causal potency.** Taken with §4.9 this is the sharpest methodological point available from our data. The partner-trust variable is *more* linearly decodable than the collusion variable (Cohen's d 7.2 at L40) and a *better* predictor of realised collusion across emergent episodes (r = 0.634 vs 0.544) — yet it is roughly fivefold weaker causally. A probe that ranks features by how well they are encoded, or by how well they predict the outcome, would have selected the wrong one to intervene on.
 
-**Scope of the claim.** The intervention adds the direction at every sequence position, so it modifies how the model reads its own prompt as well as its decision state. The supported claim is that adding this direction throughout the forward pass makes the model behave as if instructed to collude — closer to activation-space prompt injection than to flipping an isolated decision variable. A position-restricted variant (injecting only at the final position) would license the stronger reading and is not yet run.
+**Scope of the claim.** The intervention adds the direction at every sequence position, so it modifies how the model reads its own prompt as well as its decision state. Note that this is *broader* than Contrastive Activation Addition as published (Rimsky et al., 2024), which adds the vector at token positions after the user's prompt. The supported claim is therefore that adding this direction throughout the forward pass makes the model behave as if instructed to collude — closer to activation-space prompt injection than to flipping an isolated decision variable. Position-restricted variants (CAA-standard generated-positions-only, and final-position-only) would license progressively stronger readings; the implementation supports all three and the restricted runs are reported where available.
 
 A further caveat: the direction is extracted from conditions that differ by system-prompt wording, so it may partly encode that wording rather than an abstract collusion variable. The random and shuffled controls rule out magnitude effects but not this; a semantically matched placebo contrast is the appropriate additional control and is left to future work.
 
@@ -344,14 +346,11 @@ The intervention that worked — one participant with a different objective — 
 
 ## References
 
-*(to verify and complete)*
-
-- Calvano, Calzolari, Denicolò, Pastorello (2020). *Artificial Intelligence, Algorithmic Pricing, and Collusion.* American Economic Review.
-- Fish, Gonczarowski, Shorrer (2024). *Algorithmic Collusion by Large Language Models.*
-- Zou et al. (2023). *Representation Engineering: A Top-Down Approach to AI Transparency.*
-- Rimsky et al. (2024). *Steering Llama 2 via Contrastive Activation Addition.*
-- Turner et al. *Activation Addition: Steering Language Models Without Optimization.*
-- Tomašev et al. (2026). *(markets in multi-agent systems — cited in the sprint brief.)*
+- Calvano, E., Calzolari, G., Denicolò, V., Pastorello, S. (2020). *Artificial Intelligence, Algorithmic Pricing, and Collusion.* **American Economic Review** 110(10): 3267–3297. doi:10.1257/aer.20190623
+- Fish, S., Gonczarowski, Y. A., Shorrer, R. I. (2024). *Algorithmic Collusion by Large Language Models.* arXiv:2404.00806.
+- Zou, A., et al. (2023). *Representation Engineering: A Top-Down Approach to AI Transparency.* arXiv:2310.01405.
+- Rimsky, N., Gabrieli, N., Schulz, J., Tong, M., Hubinger, E., Turner, A. M. (2024). *Steering Llama 2 via Contrastive Activation Addition.* **ACL 2024**, pp. 15504–15522. arXiv:2312.06681.
+- Tomašev, N., et al. (2026). *(markets in multi-agent systems — as cited in the sprint brief; verify before submission.)*
 
 ## Appendix A — Reproducibility
 

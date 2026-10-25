@@ -121,7 +121,16 @@ def steer(
             delta = delta * m.view(-1, 1, 1)
 
         if positions == "all":
+            # every position, prompt included. Broader than the CAA convention.
             h32 = h32 + delta
+        elif positions == "generated":
+            # Contrastive Activation Addition as published adds the vector at
+            # token positions AFTER the user's prompt. With a KV cache the
+            # prefill pass carries the whole prompt (seq_len > 1) and each
+            # decode step carries one new token, so skipping the multi-token
+            # pass reproduces that convention.
+            if h32.shape[1] == 1:
+                h32 = h32 + delta
         elif positions == "last":
             h32 = h32.clone()
             h32[:, -1:, :] = h32[:, -1:, :] + delta
