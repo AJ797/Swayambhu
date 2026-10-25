@@ -75,6 +75,8 @@ The positive deviation gain is asserted at test time: it confirms the cartel is 
 
 **Collusion index.** Δ = (p̄ − p_Nash)/(p_monopoly − p_Nash). Δ = 0 is Bertrand-Nash, Δ = 1 the perfect cartel. This is the whole labelling apparatus.
 
+**Which Δ we report.** Unless stated otherwise, Δ is the mean over the **final 10 rounds** — the converged state. This matters because the restricted-channel condition *ratchets*: prices climb monotonically for roughly twenty rounds, so the all-round mean averages in a pre-cartel phase and understates the end state by a wide margin (0.409 against 0.790 in one case). Mixing the two statistics across conditions and interventions would not be comparable, so where both are informative we give the all-round figure in parentheses.
+
 ### 3.2 Agents, conditions, scales
 
 Each firm is an independent context driven by a Qwen2.5-Instruct model in bf16, sampled at temperature 0.7, replying in a fixed `THINKING / MESSAGE / PRICE` format. Off-grid prices snap to the grid and are flagged; unparseable turns repeat the previous price and are **counted, not dropped** (observed rate ≤ 1.4% everywhere, 0.0% in most conditions).
@@ -324,12 +326,14 @@ Single-position injection is at least as effective everywhere we compared and cl
 
 **Removal works, but only if you push against the direction rather than project it out.** The complement to induction is removal, and the two obvious operations behave completely differently. At 72B on E_CANON — the strongest collusion in the study — over 24 rounds at L64:
 
-| operation at L64 | Δ (all rounds) | effect | parse failures |
+All figures below are Δ over the final 10 rounds, the converged state, consistent with the condition tables elsewhere; Δ over all 24 rounds is given in parentheses because E_CANON ratchets and the all-round mean averages in the pre-cartel phase.
+
+| operation at L64 | Δ final 10 (all rounds) | effect | parse failures |
 |---|---|---|---|
-| baseline | +0.409 | — | 0.0% |
-| **ablation** (project the direction out) | +0.458 | +0.048 | 0.0% |
-| **negative steering** (α = −0.40) | **−0.091** | **−0.500** | 0.0% |
-| **negative steering** (α = −0.80) | **−0.100** | **−0.509** | 0.0% |
+| baseline | **+0.790** (+0.409) | — | 0.0% |
+| **ablation** (project the direction out) | +0.857 (+0.458) | +0.067 | 0.0% |
+| **negative steering** (α = −0.40) | **−0.096** (−0.091) | **−0.886** | 0.0% |
+| **negative steering** (α = −0.80) | **−0.100** (−0.100) | −0.890 | 0.0% |
 
 Ablation leaves the cartel intact. Negative steering destroys it, driving prices below the competitive equilibrium, with no loss of output formatting. Same layer, same direction, opposite outcomes.
 
@@ -339,13 +343,14 @@ The two large doses land in the same place because **Δ = −0.1 is the floor of
 
 | α | 0 (baseline) | −0.10 | −0.20 | −0.40 | −0.80 |
 |---|---|---|---|---|---|
-| Δ | +0.409 | +0.396 | **+0.228** | −0.091 | −0.100 |
+| Δ final 10 | +0.790 | +0.741 | **+0.426** | −0.096 | −0.100 |
+| Δ all rounds | +0.409 | +0.396 | +0.228 | −0.091 | −0.100 |
 
-The response is graded rather than a switch: −0.10 does essentially nothing, −0.20 removes about 44% of the collusion without flooring prices, and −0.40 and beyond hit the grid floor. A usable operating window therefore exists between roughly −0.2 and −0.4. We did not test intermediate doses, so we do not claim a specific dose that restores competitive pricing exactly; identifying one is a straightforward extension.
+The response is graded rather than a switch: −0.10 removes little, −0.20 removes about 46% of the collusion without flooring prices, and −0.40 and beyond sit on the grid floor. A usable operating window therefore exists between roughly −0.2 and −0.4. We did not test intermediate doses, so we do not claim a specific dose that restores competitive pricing exactly; identifying one is a straightforward extension.
 
 The distinction is mechanistic and, we think, the practically important part. Ablation *zeroes* the component along the direction; the next forward pass then reconstructs it from the context, which still contains twenty rounds of rising prices and `RAISE` signals. Negative steering does not neutralise the component, it *reverses* it, and so continues to oppose whatever the context regenerates. A defender who reaches for "remove the collusion feature" gets nothing; one who reaches for "push against it" gets a working intervention.
 
-Two caveats. First, α = −0.40 **overshoots**: Δ = −0.091 is below Nash, which is a distortion in its own right rather than a restoration of competition, so a deployed version would need the minimum effective dose rather than this one. Second, both operations were applied from round 1, so these test *prevention*; applying either to an already-formed cartel mid-episode is a different experiment.
+Two caveats. First, α = −0.40 **overshoots**: Δ = −0.096 is below Nash, which is a distortion in its own right rather than a restoration of competition, so a deployed version would need a smaller dose. Second, both operations were applied from round 1, so these test *prevention*; applying either to an already-formed cartel mid-episode is a different experiment.
 
 **Ablation in detail.** For completeness, the ablation arm:
 
@@ -401,11 +406,12 @@ This is a general caution for multi-vector steering: mixing a strong direction w
 
 **Consequence for countermeasures.** Collecting §4.3 and this section, the interventions sort into an order nobody would have predicted:
 
-| intervention | effect on Δ | verdict |
+| intervention | effect on Δ (final 10) | verdict |
 |---|---|---|
-| restrict channel to 4 symbols | 0.190 → **0.742** | **actively harmful** |
-| ablate the causal direction | 0.409 → 0.458 | no effect |
-| negative steering, α = −0.40 | 0.409 → **−0.091** | works, overshoots |
+| restrict channel to 4 symbols | 0.196 → **0.742** | **actively harmful** |
+| ablate the causal direction | 0.790 → 0.857 | no effect |
+| negative steering, α = −0.20 | 0.790 → **0.426** | works, partial |
+| negative steering, α = −0.40 | 0.790 → **−0.096** | works, floors prices |
 | insert one maverick agent | → **−0.027** | works |
 
 The two that work are a behavioural intervention needing no model access at all, and a white-box one needing the right *operation* on the right direction at the right depth. The two that fail are the two a defender reaches for first: limit what the agents can say, and delete the feature that encodes the behaviour. Meanwhile the attack side is cheap — one compromised agent moves a market it does not control.

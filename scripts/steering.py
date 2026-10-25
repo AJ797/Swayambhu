@@ -237,7 +237,7 @@ def main() -> None:
             print("  fallback repeats the previous price (grid midpoint on round 1),")
             print("  which manufactures delta ~ 0.5 that looks like induced collusion.")
             print(f"\n  {'layer':>6} {'alpha':>7} {'delta':>8} {'d_vs_base':>10} "
-                  f"{'fail':>7}  status")
+                  f"{'d_last10':>9} {'fail':>7}  status")
             for L in layers:
                 for a in args.alphas:
                     spec = {"layer": L, "vector": unit(dirs[L]), "alpha": a,
@@ -247,9 +247,18 @@ def main() -> None:
                     pf = st["parse_failure_rate"]
                     valid = pf <= args.max_parse_fail
                     print(f"  {L:6d} {a:7.2f} {d:8.3f} {d - base['delta_all']:+10.3f} "
+                          f"{st['delta_last10']:9.3f} "
                           f"{pf:7.1%}  {'ok' if valid else 'INVALID (model broken)'}")
                     rows.append({"layer": L, "alpha": a, "delta": d,
                                  "d_vs_base": d - base["delta_all"],
+                                 # record the converged statistic too: for a
+                                 # ratcheting condition delta_all averages in
+                                 # the pre-cartel phase, and mixing it with the
+                                 # delta_last10 used elsewhere is apples to
+                                 # oranges
+                                 "delta_last10": st["delta_last10"],
+                                 "d_last10_vs_base": st["delta_last10"] - base["delta_last10"],
+                                 "sd": st["delta_last10_sd"],
                                  "parse_fail": pf, "valid": bool(valid)})
             results["baseline"] = base
             results["sweep"] = rows
