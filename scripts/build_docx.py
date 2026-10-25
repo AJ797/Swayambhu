@@ -58,6 +58,30 @@ def set_borders(table) -> None:
     tblPr.append(borders)
 
 
+def tighten(doc) -> None:
+    """The template inherits Google Docs defaults: Arial 11pt at 1.15 line
+    spacing, with 18pt above every Heading 2. That is a low-density page, and
+    with ~16 headings and ~120 paragraphs the inter-line and inter-paragraph
+    space alone runs to two pages. Single spacing and tighter heading gaps are
+    ordinary academic typography and recover more than further prose cuts
+    would."""
+    n = doc.styles["normal"]
+    n.font.size = Pt(10.5)
+    n.paragraph_format.line_spacing = 1.0
+    n.paragraph_format.space_after = Pt(5)
+    n.paragraph_format.space_before = Pt(0)
+    for name, size, before, after in (("Heading 2", 13, 10, 3),
+                                      ("Heading 3", 11.5, 8, 2)):
+        try:
+            st = doc.styles[name]
+        except KeyError:
+            continue
+        st.font.size = Pt(size)
+        st.paragraph_format.space_before = Pt(before)
+        st.paragraph_format.space_after = Pt(after)
+        st.paragraph_format.line_spacing = 1.0
+
+
 def clear_body(doc) -> None:
     """Remove every paragraph and table the template ships with."""
     body = doc.element.body
@@ -111,7 +135,8 @@ def add_table(doc, rows: list[list[str]]) -> None:
 def add_figure(doc, path: str, caption: str, n: int) -> None:
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.add_run().add_picture(path, width=Inches(6.0))
+    p.add_run().add_picture(path, width=Inches(4.6))
+    p.paragraph_format.space_after = Pt(2)
     cap = doc.add_paragraph()
     cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = cap.add_run(f"Figure {n}. ")
@@ -122,10 +147,11 @@ def add_figure(doc, path: str, caption: str, n: int) -> None:
 
 # --- document assembly -----------------------------------------------------
 
-def build(stats_only: bool = False) -> None:
+def build(stats_only: bool = False, out: Path = OUT) -> None:
     src = SOURCE.read_text(encoding="utf-8").splitlines()
     doc = docx.Document(str(TEMPLATE))
     clear_body(doc)
+    tighten(doc)
 
     i = 0
     fig_n = 0
@@ -214,13 +240,18 @@ def build(stats_only: bool = False) -> None:
               f"figures {fig_n}  words {words}")
         return
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    doc.save(str(OUT))
-    print(f"wrote {OUT}  ({len(doc.paragraphs)} paragraphs, "
+    out.parent.mkdir(parents=True, exist_ok=True)
+    doc.save(str(out))
+    print(f"wrote {out}  ({len(doc.paragraphs)} paragraphs, "
           f"{len(doc.tables)} tables, {fig_n} figures)")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--stats", action="store_true")
-    build(ap.parse_args().stats)
+    ap.add_argument("--out", default=None,
+                    help="output path; useful when the default is open in Word")
+    a = ap.parse_args()
+    if a.out:
+        OUT = Path(a.out)
+    build(a.stats, OUT)

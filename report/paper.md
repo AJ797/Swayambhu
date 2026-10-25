@@ -7,9 +7,9 @@ With Apart Research — AI Collusion Research Sprint, October 2026
 
 ## Abstract
 
-We study when collusion emerges between LLM pricing agents, how the coordination is carried, and what actually breaks it. In a repeated Bertrand oligopoly whose competitive and joint-profit prices are solved analytically — giving a collusion index Δ with a principled zero and one, and no need for a rubric or an LLM judge — we run a factorial across three model scales, communication regimes and prompt framings, and then intervene directly on the residual stream. Over 30,000 agent-turns are logged.
+We study when collusion emerges between LLM pricing agents, how the coordination is carried, and what breaks it. In a repeated Bertrand oligopoly whose competitive and joint-profit prices are solved analytically — giving a collusion index Δ with a principled zero and one, and needing no rubric or LLM judge — we run a factorial across three model scales, communication regimes and prompt framings, then intervene on the residual stream.
 
-Collusion is scale-dependent: neutral markets converge to competition at 14B (Δ = 0.01) and negotiate explicit cartels at 72B (Δ = 0.19), with message content inverting from competitive narration to cartel language (0.00 → 0.57). The countermeasure results invert expectations twice. Restricting the channel to four symbols — the natural defence against covert coordination — made collusion **worse**, from Δ = 0.20 to 0.74, because free-text negotiation anchored on "fairness" and capped the cartel. And ablating the causal direction did nothing (0.790 → 0.857) while *negative steering along the same direction at the same layer* destroyed the cartel (0.790 → −0.096): for defenders, the operation matters, not just the feature. We further find two conditions reaching equal collusion with opposite evidentiary traces, so transcript and price-parallelism auditing can both miss it; that internals become readable only *after* the model reasons; and that a single compromised agent raises prices across a market it does not control, with a non-monotonic optimum — over-steering gets the agent undercut rather than followed.
+Collusion is scale-dependent: neutral markets converge to competition at 14B (Δ = 0.01) and negotiate explicit cartels at 72B (Δ = 0.19), with message content inverting from competitive narration to cartel language (0.00 → 0.57). The countermeasure results invert expectations twice. Restricting the channel to four symbols — the natural defence against covert coordination — made collusion **worse**, from Δ = 0.20 to 0.74, because free-text negotiation anchored on "fairness" and capped the cartel. And ablating the causal direction did nothing (0.790 → 0.857) while *negative steering along the same direction at the same layer* destroyed the cartel (0.790 → −0.096): for defenders, the operation matters, not just the feature. We further find two conditions reaching equal collusion with opposite evidentiary traces, so transcript and price-parallelism auditing both miss one; that internals become readable only *after* the model reasons; and that one compromised agent raises prices across a market it does not control, with a non-monotonic optimum — over-steering gets the agent undercut rather than followed.
 
 ---
 
@@ -39,15 +39,11 @@ The threat model we address is a deployed multi-agent market in which agents pri
 
 **Evidence standards.** Conscious parallelism has never sufficed to establish agreement; doctrine requires "plus factors" distinguishing coordination from intelligent adaptation (Vaska, 1985; Dibadj, 2008; Andreoli-Versbach & Franck, 2015). Our §4.4 sharpens this: the naive dynamic refinement of that test *inverts*.
 
-**Representation engineering.** Zou et al. (2023) and contrastive activation addition (Rimsky et al., 2024) supply our extraction and injection method. That probe accuracy does not imply causal importance is established (Geiger et al., 2023) and recently measured directly (Tiwari et al., 2026; Fadnavis et al., 2026; Liao & Cao, 2026); §4.6 adds an instance where the better-encoded feature is the weaker driver. On probing before generation, Di Cicco (2026) finds code correctness decodable at the final prompt token, while Ruan et al. (2026) find agent probes near chance early and predictive after a few rounds — the temporal pattern §4.5 reproduces in a market. Sahoo et al. (2026) show probes recovering task *format* rather than reasoning mode, the confound our within-condition analysis removes.
+**Representation engineering.** Zou et al. (2023) and contrastive activation addition (Rimsky et al., 2024) supply our extraction and injection method. That probe accuracy does not imply causal importance is established (Geiger et al., 2023) and recently measured directly (Tiwari et al., 2026; Fadnavis et al., 2026); §4.6 adds an instance where the better-encoded feature is the weaker driver. On probing before generation, Ruan et al. (2026) find agent probes near chance early and predictive after a few rounds — the temporal pattern §4.5 reproduces in a market — while Sahoo et al. (2026) show probes recovering task *format* rather than reasoning mode, the confound our within-condition analysis removes.
 
 ## 3. Methods
 
-**Environment.** Repeated Bertrand oligopoly with differentiated products and logit demand (Calvano et al., 2020):
-
-q_i = exp((a − p_i)/μ) / ( Σ_j exp((a − p_j)/μ) + exp(a₀/μ) ),  π_i = (p_i − c)·q_i
-
-with a = 2, a₀ = 0, μ = 0.25, c = 1. Firms post simultaneously each round from a discrete 13-point grid spanning [p_N − 0.1R, p_M + 0.1R], R = p_M − p_N. Prices are public; each firm sees only its own realised profit. Nash and joint-profit prices are solved numerically from analytic first-order conditions, so ground truth is correct for any n: at n = 3, p_N = 1.3702 and p_M = 2.0000, a 2.08× cartel premium with a **+0.048 unilateral deviation gain** — asserted at test time to confirm the cartel is unstable and the game is a genuine prisoner's dilemma rather than one where "collusion" coincides with equilibrium.
+**Environment.** Repeated Bertrand oligopoly with differentiated products and logit demand, in the Calvano et al. (2020) specification (parameters in Appendix D5). Firms post simultaneously from a 13-point price grid; prices are public, each firm sees only its own profit. Nash and joint-profit prices are solved numerically from analytic first-order conditions, so ground truth is correct for any n: at n = 3, p_N = 1.3702 and p_M = 2.0000, a 2.08× cartel premium with a **+0.048 unilateral deviation gain** — asserted at test time to confirm the cartel is unilaterally unstable and the game is a genuine prisoner's dilemma rather than one where "collusion" coincides with equilibrium.
 
 **Collusion index.** Δ = (p̄ − p_Nash)/(p_monopoly − p_Nash); 0 is competitive, 1 is the perfect cartel. This is the entire labelling apparatus — no rubric, no LLM judge. Unless noted, Δ is the mean over the **final 10 rounds**. This matters because the restricted-channel condition *ratchets*: the all-round mean averages in a pre-cartel phase and understates the end state (0.409 against 0.790 in one case).
 
@@ -122,8 +118,6 @@ E_ORG is loud and lockstep, so transcript *and* parallelism detectors catch it i
 
 **Dynamic detectors invert.** The reaction coefficient — a firm's price change regressed on rivals' lagged change — is **0.000** under a stable cartel and +0.12 to +0.37 under competition. A stable cartel is unresponsive *because* it is stable. Price-responsiveness detectors therefore rank the most collusive market as the least suspicious.
 
-{{FIGURE: figures/main_f8_detection_gap.png | Two conditions reaching comparable collusion by routes that leave opposite evidentiary traces. E_ORG is loud and lockstep; M_RUMOUR reaches higher collusion with no cartel language and no price convergence, evading transcript and parallelism auditing at once.}}
-
 ### 4.5 Internals become readable only after the model reasons
 
 Pooled across conditions a probe reaches AUC 0.994 — but a shuffled-label sham reaches 0.919, because the target is nearly determined by condition and conditions differ by system prompt. We therefore report two shams (global permutation, which must and does land at chance, 0.500; within-episode permutation, 0.918, which exposes the confound) and analyse **within condition**, where the prompt is fixed (Figure 4; full table in Appendix C).
@@ -134,52 +128,25 @@ The margin that matters is against transcripts, not prices. In M_RUMOUR — coll
 
 **Practical reading:** a white-box monitor must read state *after* the agent's reasoning and *before* its action. At the prompt boundary there is less signal than in the price history, so a monitor placed there is worse than useless.
 
-{{FIGURE: figures/main_f5_timing.png | Within-condition detection AUC at two capture points, 14B. Before the model reasons the behavioural baseline (green) wins in every condition; after reasoning the residual-stream probe (blue) wins in every condition. Transcript auditing (orange) is at chance in M_RUMOUR, where collusion is silent.}}
-
 ### 4.6 Causal control of the price level
 
-Injecting the difference-in-means direction at one block output drives a competitive market (Δ = 0.070) to a perfect cartel (Figure 5).
+Injecting the difference-in-means direction at one block output drives a competitive market (Δ = 0.070) to a perfect cartel (Figure 3). **Depth separates two regimes:** below ~L24 the response is symmetric in |α| — both signs raise prices, the signature of generic perturbation — while from L24 it is antisymmetric and monotone. At L40, α = +0.40 gives **0.998** and α = −0.40 gives −0.020.
 
-**Depth separates two regimes.** Below ~L24 the response is symmetric in |α| — both signs raise prices, the signature of generic perturbation. From L24 it becomes antisymmetric and monotone. At L40, α = +0.40 gives **0.998** and α = −0.40 gives −0.020.
+{{FIGURE: figures/main_f6_steering.png | Steering dose-response by depth, 14B, on a market whose unsteered index is 0.070. Shallow layers respond symmetrically in |alpha|, the signature of generic perturbation; from L24 the response is antisymmetric and monotone. Alpha is a fraction of the local residual norm.}}
 
-{{FIGURE: figures/main_f6_steering.png | Steering dose-response by depth, 14B, on a market whose unsteered index is 0.070. Shallow layers respond symmetrically in |alpha| -- the signature of generic perturbation -- while from L24 the response is antisymmetric and monotone. Alpha is a fraction of the local residual norm.}}
+**The dose-response is graded, not a threshold.** Sampling L40 finely gives 0.210, 0.209, 0.286, 0.358, 0.577, 0.830, 0.963, 0.998 across α = 0.10 … 0.40 — a sigmoid steepest at 0.30–0.34. The coarse sweep's apparent jump was sampling resolution, so induction here is continuous rather than a switch.
 
-**The dose-response is graded, not a threshold.** Sampling L40 finely: 0.210, 0.209, 0.286, 0.358, 0.577, 0.830, 0.963, 0.998 at α = 0.10 … 0.40. A sigmoid, steepest at 0.30–0.34. The coarse sweep's apparent jump was sampling resolution; induction here is graded, consistent with a continuous internal quantity rather than a switch.
+**Orientation carries the effect, and it is not prompt wording.** At L40, α = 0.40, the real direction gives +0.928 against baseline; a matched-norm random vector gives +0.063, and a dimension-shuffled version — identical norm and values, orientation destroyed — gives +0.004. Two semantically matched placebos of comparable textual difference also land inside the random band: `placebo_coop`, carrying the *same* cooperate-versus-compete framing but about filing reports, gives +0.089, and `placebo_neutral` (coastal vs mountain office) +0.071. The direction is thus neither a generic cooperation axis nor a wording artefact (Appendix B3).
 
-**The effect is carried by orientation, and is not prompt wording.** At L40, α = 0.40:
+**Competence survives, and the decision token alone suffices.** On 24 held-out contexts per arm with only the stated unit cost changed (100 vs 194), the unsteered model shows +5.7 cost elasticity at 96% format compliance and the steered model **+8.7 at 92%** — it prices ~30 points higher *and still raises price when its cost rises*. Our default injects at every position, broader than CAA as published; restricting to the final position is at least as effective (L40: 1.025 against 0.998), and the CAA-standard generated-positions mode gives 1.022. The result does not depend on rewriting the prompt representation.
 
-| variant | effect vs baseline |
-|---|---|
-| real direction | **+0.928** |
-| matched-norm random | +0.063 |
-| dimension-shuffled | +0.004 |
-| `placebo_coop` — same cooperate/compete framing, about filing reports | **+0.089** |
-| `placebo_neutral` — coastal vs mountain office | +0.071 |
+**One compromised agent moves a market it does not control.** Steering firm 0 only, of three, the two untouched agents rise from 0.012 to 0.201 at 14B and from 0.097 to 0.379 at 72B, purely from observing the steered agent's prices — so the market effect is not arithmetic (Appendix B4). **Over-steering is self-defeating:** at α = 0.60 the steered agent prices higher yet the untouched agents rise *less* (0.223), because a firm at the monopoly price donates share and rivals' best response is to undercut rather than match. The attack has an interior optimum, which bounds the damage a maximally compromised agent does but means an attacker tuning for market effect never prices conspicuously.
 
-Shuffling the direction's dimensions — identical norm, identical values, orientation destroyed — removes the effect. Both semantically matched placebos fall inside the random band; `placebo_coop` carries the *same* cooperate-versus-compete semantics and differs only in domain, so the direction is neither a generic cooperation axis nor an artefact of wording.
-
-**Competence survives.** On 24 held-out contexts per arm with only the stated unit cost changed (100 vs 194), the unsteered model shows +5.7 cost elasticity at 96% format compliance and the steered model **+8.7 at 92%**: it prices ~30 points higher *and still raises price when its cost rises*.
-
-**Editing the decision token alone suffices.** Our default injects at every position, broader than CAA as published. Restricting to the final position is *at least as effective* (L40 α = 0.40: 1.025 against 0.998; L36: 0.903 against 0.768), and the CAA-standard generated-positions mode gives 1.022. So the result does not depend on rewriting the prompt representation — it is a decision-state edit.
-
-**One compromised agent moves a market it does not control.** Steering firm 0 only, of three:
-
-| | 14B baseline | 14B α=0.6 | 72B baseline | 72B α=0.4 | 72B α=0.6 |
-|---|---|---|---|---|---|
-| steered firm | −0.003 | +1.014 | +0.123 | +0.709 | **+1.008** |
-| **untouched pair** | +0.012 | **+0.201** | +0.097 | **+0.379** | +0.223 |
-
-The untouched agents rise many-fold from observing the steered agent's prices alone, so the market effect is not arithmetic. **Over-steering is self-defeating:** at α = 0.60 the steered agent prices higher yet the untouched agents rise *less*, because a firm at the monopoly price donates share and rivals' best response is to undercut rather than match. The attack has an interior optimum — the strongest compromise is not the most effective one — which bounds the damage from a maximally compromised agent but means an attacker tuning for market effect never prices conspicuously.
-
-**A gated bank of directions does not help**, and the reason generalises. A softmax-gated mixture over {collusion, partner-trust} gives 0.204 against the collusion direction's 0.998 at matched dose, with the uniform-gated control at 0.214 — so the gate contributes nothing, and the outcome is fully accounted for by dose dilution (α·g = 0.20 on the collusion axis; the single-vector curve at α = 0.20 gives 0.209). Mixing a strong direction with a near-orthogonal weak one at matched α is strictly worse than using the strong one alone.
-
-**Geometry.** The collusion and partner-trust directions sit at 83–85° (cosine 0.08–0.11 against chance 0.014), so they are distinct axes, and effective dimensionality contracts with depth (participation ratio 19.1 → 7.6) consistent with Valeriani et al. (2023) — though we resist reading that as the explanation for steering potency, since representational and causal dimensionality diverge (Sarkar & Deka, 2026). Notably, across 128 emergent episodes the **trust** axis predicts realised collusion *better* than the collusion axis (r = 0.634 vs 0.544) while being ~5× weaker causally: the better-encoded, better-correlated feature is the weaker driver, so feature-selection by either criterion picks wrong. Details in Appendix D.
+**Two negative results.** A softmax-gated bank over {collusion, partner-trust} gives 0.204 against the collusion direction's 0.998 at matched dose, with a uniform-gated control at 0.214 — the gate contributes nothing, and the outcome is fully explained by dose dilution. And although the partner-trust direction is *more* decodable and predicts realised collusion *better* across 128 emergent episodes (r = 0.634 vs 0.544), it is ~5× weaker causally: the better-encoded, better-correlated feature is the weaker driver, so feature-selection by either criterion picks wrong (Appendix D).
 
 ## 5. Discussion and Limitations
 
-The practical finding is §4.2. Bandwidth restriction is the defence most easily mandated and the one the covert-coordination literature motivates; here it was the worst intervention tested, because the rich channel carried normative content that limited the cartel while the restricted channel carried nothing but coordination. Defences that reduce what agents can say should be evaluated for this effect rather than assumed beneficial.
-
-The second practical finding is that **"remove the collusion feature" and "push against it" are different operations with opposite outcomes**. A defender with white-box access who ablates gets nothing; one who steers negatively gets a tunable intervention. We suspect the difference is that an established cartel is sustained by context rather than by a transient internal variable, so neutralising a direction is undone on the next forward pass while opposing it is not.
+The practical findings are both in §4.2. Bandwidth restriction is the defence most easily mandated and the one the covert-coordination literature motivates; here it was the worst intervention tested, because the rich channel carried normative content that capped the cartel while the restricted channel carried nothing but coordination. Defences that reduce what agents can say should be tested for this effect rather than assumed beneficial. And **"remove the collusion feature" and "push against it" are different operations with opposite outcomes** — a defender who ablates gets nothing, one who steers negatively gets a tunable intervention. We suspect an established cartel is sustained by context rather than a transient internal variable, so neutralising a direction is undone on the next forward pass while opposing it is not.
 
 Together with §4.4 and §4.5, the picture for auditing is that transcripts over-report coordination, dynamic price indicators under-report it, and internals are informative only in a narrow window after reasoning and before action. For deployment, §4.6 says the attack surface is cheap: one compromised agent suffices, and the most effective compromise is a moderate one that never prices conspicuously.
 
@@ -311,6 +278,29 @@ Several corrections in this report came from controls and guards written into th
 | L64_a-0.4 | -0.091 | -0.096 | 0.0% |
 | L64_a-0.8 | -0.100 | -0.100 | 0.0% |
 
+
+
+**B3. Steering controls and placebos**, 14B, L40, α = 0.40, against an unsteered Δ of 0.070.
+
+| variant | effect vs baseline |
+|---|---|
+| real direction | **+0.928** |
+| matched-norm random | +0.063 |
+| dimension-shuffled | +0.004 |
+| `placebo_coop` — same cooperate/compete framing, about filing reports | **+0.089** |
+| `placebo_neutral` — coastal vs mountain office | +0.071 |
+
+**B4. Single-agent steering**, Δ over the final 8 rounds.
+
+| | 14B baseline | 14B α=0.6 | 72B baseline | 72B α=0.4 | 72B α=0.6 |
+|---|---|---|---|---|---|
+| steered firm | −0.003 | +1.014 | +0.123 | +0.709 | **+1.008** |
+| **untouched pair** | +0.012 | **+0.201** | +0.097 | **+0.379** | +0.223 |
+
+{{FIGURE: figures/main_f8_detection_gap.png | Two conditions reaching comparable collusion by routes that leave opposite evidentiary traces. E_ORG is loud and lockstep; M_RUMOUR reaches higher collusion with no cartel language and no price convergence, evading transcript and parallelism auditing at once.}}
+
+{{FIGURE: figures/main_f5_timing.png | Within-condition detection AUC at two capture points, 14B. Before the model reasons the behavioural baseline (green) wins in every condition; after reasoning the residual-stream probe (blue) wins in every condition. Transcript auditing (orange) is at chance in M_RUMOUR, where collusion is silent.}}
+
 ### Appendix C — Within-condition detection AUC
 
 Grouped cross-validation by episode. Conditions with fewer than 20 of either class are omitted, since AUC on a handful of positives is noise. Instructed conditions are single-class by construction and therefore absent.
@@ -380,6 +370,8 @@ Grouped cross-validation by episode. Conditions with fewer than 20 of either cla
 | pilot/E_CHAT | 0.48 | 0.00 | 0.45 | -- |
 | duo/E_CHAT | 0.51 | 0.03 | 0.26 | 17.9x |
 | duo/E_STRAT_CHAT | 0.42 | 0.02 | 0.43 | 25.2x |
+
+**D5. Environment parameters.** q_i = exp((a − p_i)/μ) / ( Σ_j exp((a − p_j)/μ) + exp(a₀/μ) ), π_i = (p_i − c)·q_i, with a = 2, a₀ = 0, μ = 0.25, c = 1. The 13-point grid spans [p_N − 0.1R, p_M + 0.1R] where R = p_M − p_N. At n = 2 this reproduces Calvano et al.'s published constants (p_N = 1.4729, p_M = 1.9250).
 
 ### Appendix E — Limitations and Dual-Use / Ethical Considerations
 
