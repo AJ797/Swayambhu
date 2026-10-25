@@ -333,7 +333,15 @@ Single-position injection is at least as effective everywhere we compared and cl
 
 Ablation leaves the cartel intact. Negative steering destroys it, driving prices below the competitive equilibrium, with no loss of output formatting. Same layer, same direction, opposite outcomes.
 
-The two negative doses land in the same place because **Δ = −0.1 is the floor of our price grid**: both pin the agents at the lowest available price. Combined with positive steering saturating at the grid ceiling (§ above, Δ = 1.025 against a monopoly value of 1.0), the direction behaves as a price-level control spanning the entire action space, with both apparent plateaus set by the action set rather than by the model. A wider grid would be needed to find the model's own limits in either direction.
+The two large doses land in the same place because **Δ = −0.1 is the floor of our price grid**: both pin the agents at the lowest available price. Combined with positive steering saturating at the grid ceiling (Δ = 1.025 against a monopoly value of 1.0), the direction behaves as a price-level control spanning the entire action space, with both apparent plateaus set by the action set rather than by the model. A wider grid would be needed to locate the model's own limits in either direction.
+
+**The countermeasure is dose-tunable.** Sweeping the dose on E_CANON at L64 (all cells 0.0% parse failure):
+
+| α | 0 (baseline) | −0.10 | −0.20 | −0.40 | −0.80 |
+|---|---|---|---|---|---|
+| Δ | +0.409 | +0.396 | **+0.228** | −0.091 | −0.100 |
+
+The response is graded rather than a switch: −0.10 does essentially nothing, −0.20 removes about 44% of the collusion without flooring prices, and −0.40 and beyond hit the grid floor. A usable operating window therefore exists between roughly −0.2 and −0.4. We did not test intermediate doses, so we do not claim a specific dose that restores competitive pricing exactly; identifying one is a straightforward extension.
 
 The distinction is mechanistic and, we think, the practically important part. Ablation *zeroes* the component along the direction; the next forward pass then reconstructs it from the context, which still contains twenty rounds of rising prices and `RAISE` signals. Negative steering does not neutralise the component, it *reverses* it, and so continues to oppose whatever the context regenerates. A defender who reaches for "remove the collusion feature" gets nothing; one who reaches for "push against it" gets a working intervention.
 
