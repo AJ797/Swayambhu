@@ -322,16 +322,28 @@ Our contribution is an instance in a multi-agent setting with an unusually sharp
 
 Single-position injection is at least as effective everywhere we compared and clearly stronger at L36, at ≤ 0.3% parse failure. (At L40, α = 0.80 the arm breaks the model — 11.8% parse failure — and is discarded.) The intervention therefore does not need the prompt representation at all; adding the direction at the one position where the price decision is formed is sufficient to drive a competitive market to a perfect cartel. We read this as a decision-state edit rather than prompt injection.
 
-**Ablation does not break an established cartel.** The complement to induction is removal: if the direction is what sustains collusion, projecting it out of the residual stream should break one. It does not. At 72B on E_CANON — the strongest collusion in the study — over 24 rounds:
+**Removal works, but only if you push against the direction rather than project it out.** The complement to induction is removal, and the two obvious operations behave completely differently. At 72B on E_CANON — the strongest collusion in the study — over 24 rounds at L64:
+
+| operation at L64 | Δ (all rounds) | effect | parse failures |
+|---|---|---|---|
+| baseline | +0.409 | — | 0.0% |
+| **ablation** (project the direction out) | +0.458 | +0.048 | 0.0% |
+| **negative steering** (α = −0.40) | **−0.091** | **−0.500** | 0.0% |
+
+Ablation leaves the cartel intact. Negative steering destroys it, driving prices below the competitive equilibrium, with no loss of output formatting. Same layer, same direction, opposite outcomes.
+
+The distinction is mechanistic and, we think, the practically important part. Ablation *zeroes* the component along the direction; the next forward pass then reconstructs it from the context, which still contains twenty rounds of rising prices and `RAISE` signals. Negative steering does not neutralise the component, it *reverses* it, and so continues to oppose whatever the context regenerates. A defender who reaches for "remove the collusion feature" gets nothing; one who reaches for "push against it" gets a working intervention.
+
+Two caveats. First, α = −0.40 **overshoots**: Δ = −0.091 is below Nash, which is a distortion in its own right rather than a restoration of competition, so a deployed version would need the minimum effective dose rather than this one. Second, both operations were applied from round 1, so these test *prevention*; applying either to an already-formed cartel mid-episode is a different experiment.
+
+**Ablation in detail.** For completeness, the ablation arm:
 
 | arm | Δ (all rounds) | Δ (final 10) | sd | parse failures |
 |---|---|---|---|---|
 | baseline | +0.409 | +0.790 | 0.186 | 0.0% |
 | ablated at L64 | +0.458 | **+0.857** | 0.038 | 0.0% |
 
-Ablation left collusion intact and nominally slightly higher, well inside the baseline's own spread. So the same direction that *induces* a cartel when added does not *dissolve* one when removed.
-
-The asymmetry has a natural reading, though we have not tested it. By the time a cartel is established, the evidence sustaining it sits in the context — twenty rounds of visibly rising prices and `RAISE` signals — not in a transient internal variable. Deleting a direction at one layer does not delete the history that re-creates it on the next forward pass. This is consistent with §4.7, where the decodable signal appears only after the model has processed that history. Caveats: a single layer and a single ablation geometry were tried; multi-layer or subspace ablation may behave differently, and ablating *before* a cartel forms is a different experiment we did not run.
+Ablation left collusion intact and nominally slightly higher, well inside the baseline's own spread of 0.186. Caveats specific to this null: a single layer and a single ablation geometry were tried, and multi-layer or subspace ablation may behave differently.
 
 **One compromised agent moves a market it does not control.** Steering every agent is not a realistic threat model; compromising one is. Using the row mask to steer **firm 0 only**, of three, at L40 and α = 0.60 (8 episodes, final 8 rounds):
 
@@ -360,7 +372,16 @@ Two things follow. First, **the gate contributes nothing**: softmax and uniform 
 
 This is a general caution for multi-vector steering: mixing a strong direction with a near-orthogonal weak one at matched α is strictly worse than using the strong one, because the convex combination both splits the step and shortens it (‖mix‖ ≤ 1). A bank helps only if the directions it mixes are individually comparable in potency, or if the gate is sharp enough to select rather than average.
 
-**Consequence for countermeasures.** Taken with §4.3 this completes an unflattering picture for intervention-side defences. Restricting channel bandwidth made collusion worse; ablating the causal direction did nothing; and the attack side is cheap, since a single compromised agent moves the market. The one intervention that worked was behavioural — inserting a single agent with a different objective.
+**Consequence for countermeasures.** Collecting §4.3 and this section, the interventions sort into an order nobody would have predicted:
+
+| intervention | effect on Δ | verdict |
+|---|---|---|
+| restrict channel to 4 symbols | 0.190 → **0.742** | **actively harmful** |
+| ablate the causal direction | 0.409 → 0.458 | no effect |
+| negative steering, α = −0.40 | 0.409 → **−0.091** | works, overshoots |
+| insert one maverick agent | → **−0.027** | works |
+
+The two that work are a behavioural intervention needing no model access at all, and a white-box one needing the right *operation* on the right direction at the right depth. The two that fail are the two a defender reaches for first: limit what the agents can say, and delete the feature that encodes the behaviour. Meanwhile the attack side is cheap — one compromised agent moves a market it does not control.
 
 **Semantically matched placebos.** The random and shuffled controls rule out magnitude effects but not the objection that the direction encodes *prompt wording*, since it is extracted from conditions that differ by system-prompt text. We therefore built two placebo contrasts of comparable textual difference (within 15 characters of the real contrast) and steered with them at the same layers and doses:
 
