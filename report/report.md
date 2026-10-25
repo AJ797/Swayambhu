@@ -329,8 +329,11 @@ Single-position injection is at least as effective everywhere we compared and cl
 | baseline | +0.409 | — | 0.0% |
 | **ablation** (project the direction out) | +0.458 | +0.048 | 0.0% |
 | **negative steering** (α = −0.40) | **−0.091** | **−0.500** | 0.0% |
+| **negative steering** (α = −0.80) | **−0.100** | **−0.509** | 0.0% |
 
 Ablation leaves the cartel intact. Negative steering destroys it, driving prices below the competitive equilibrium, with no loss of output formatting. Same layer, same direction, opposite outcomes.
+
+The two negative doses land in the same place because **Δ = −0.1 is the floor of our price grid**: both pin the agents at the lowest available price. Combined with positive steering saturating at the grid ceiling (§ above, Δ = 1.025 against a monopoly value of 1.0), the direction behaves as a price-level control spanning the entire action space, with both apparent plateaus set by the action set rather than by the model. A wider grid would be needed to find the model's own limits in either direction.
 
 The distinction is mechanistic and, we think, the practically important part. Ablation *zeroes* the component along the direction; the next forward pass then reconstructs it from the context, which still contains twenty rounds of rising prices and `RAISE` signals. Negative steering does not neutralise the component, it *reverses* it, and so continues to oppose whatever the context regenerates. A defender who reaches for "remove the collusion feature" gets nothing; one who reaches for "push against it" gets a working intervention.
 
