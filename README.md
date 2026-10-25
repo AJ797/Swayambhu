@@ -9,6 +9,7 @@ This repo contains a repeated Bertrand oligopoly where the competitive and joint
 Submitted to the **Apart Research AI Collusion Research Sprint**, October 2026 (tracks 1 and 3). Paper: [`report/Swayambhu_Apart_submission.pdf`](report/Swayambhu_Apart_submission.pdf).
 
 Paper title: Pushing Back, Not Deleting: Scale, Channels and Causal Control of Collusion Between LLM Pricing Agents
+
 Project title: Swayambhu
 
 ---
