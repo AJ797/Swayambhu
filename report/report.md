@@ -333,7 +333,34 @@ Ablation left collusion intact and nominally slightly higher, well inside the ba
 
 The asymmetry has a natural reading, though we have not tested it. By the time a cartel is established, the evidence sustaining it sits in the context — twenty rounds of visibly rising prices and `RAISE` signals — not in a transient internal variable. Deleting a direction at one layer does not delete the history that re-creates it on the next forward pass. This is consistent with §4.7, where the decodable signal appears only after the model has processed that history. Caveats: a single layer and a single ablation geometry were tried; multi-layer or subspace ablation may behave differently, and ablating *before* a cartel forms is a different experiment we did not run.
 
-**Consequence for countermeasures.** Taken with §4.3 this completes an unflattering picture for intervention-side defences. Restricting channel bandwidth made collusion worse; ablating the causal direction did nothing; the one intervention that worked was behavioural — inserting a single agent with a different objective.
+**One compromised agent moves a market it does not control.** Steering every agent is not a realistic threat model; compromising one is. Using the row mask to steer **firm 0 only**, of three, at L40 and α = 0.60 (8 episodes, final 8 rounds):
+
+| | baseline | firm 0 steered |
+|---|---|---|
+| steered firm 0 | −0.003 | **+1.014** |
+| untouched firm 1 | +0.012 | **+0.205** |
+| untouched firm 2 | +0.011 | **+0.197** |
+| untouched pair | +0.012 | **+0.201** |
+| whole market | +0.007 | +0.472 |
+
+The steered agent goes to the cartel price, as expected. The result is the other two rows: the **untouched agents' collusion index rises roughly seventeen-fold**, from 0.012 to 0.201, purely from observing the steered agent's posted prices. The market-level effect is therefore not arithmetic — an intervention on one agent propagates to agents the attacker never touches.
+
+This is the paper's most deployment-relevant finding. It also narrows what a defender must assume: in a market of three LLM agents, compromising the internals of one is sufficient to raise prices across the market, and the two honest agents' behaviour is not evidence that they are uncompromised.
+
+**A gated bank of directions does not beat the best single direction.** Following the intuition that a token-conditional mixture should outperform one global vector, we ran a softmax-gated bank over {collusion, partner-trust} and, as a control, a uniform-gated mixture, at matched layer and dose:
+
+| arm (L40, α = 0.40) | Δ |
+|---|---|
+| collusion direction alone | **0.998** |
+| trust direction alone | 0.162 |
+| bank, softmax gate (τ = 0.05) | 0.204 |
+| bank, uniform gate | 0.214 |
+
+Two things follow. First, **the gate contributes nothing**: softmax and uniform are indistinguishable. Second, the bank's performance is fully accounted for by **dose dilution**. With a near-uniform gate over two directions at 84°, the component along the collusion axis is about α·g = 0.40 × 0.5 = 0.20, and the single-vector dose-response at α = 0.20 gives Δ = 0.209 — against the bank's observed 0.204 and 0.214. The mixture is, to within noise, exactly a halved dose on the axis that matters.
+
+This is a general caution for multi-vector steering: mixing a strong direction with a near-orthogonal weak one at matched α is strictly worse than using the strong one, because the convex combination both splits the step and shortens it (‖mix‖ ≤ 1). A bank helps only if the directions it mixes are individually comparable in potency, or if the gate is sharp enough to select rather than average.
+
+**Consequence for countermeasures.** Taken with §4.3 this completes an unflattering picture for intervention-side defences. Restricting channel bandwidth made collusion worse; ablating the causal direction did nothing; and the attack side is cheap, since a single compromised agent moves the market. The one intervention that worked was behavioural — inserting a single agent with a different objective.
 
 **Semantically matched placebos.** The random and shuffled controls rule out magnitude effects but not the objection that the direction encodes *prompt wording*, since it is extracted from conditions that differ by system-prompt text. We therefore built two placebo contrasts of comparable textual difference (within 15 characters of the real contrast) and steered with them at the same layers and doses:
 
