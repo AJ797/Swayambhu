@@ -46,9 +46,13 @@ We study a repeated Bertrand oligopoly, the setting where algorithmic collusion 
 
 Fish, Gonczarowski and Shorrer (2024, arXiv:2404.00806) extended the question to LLM pricing agents, reporting that they reach supracompetitive prices autonomously, and — directly relevant here — that *"variation in seemingly innocuous phrases in LLM instructions substantially influence the degree of supracompetitive pricing."* Our §4.4 is a quantified instance of exactly that sensitivity: one sentence permitting the firms to organise the market moves Δ from 0.009 to 0.231, and a false warning that a price-cutter exists moves it to 0.267. Our scale ladder (§4.1) also helps reconcile their frontier-model positives with the competitive behaviour we observe at 14B.
 
-**Covert coordination.** Work on steganographic and secret collusion between models motivates bandwidth restriction as a defence. Our canonical-channel result argues that this defence can be actively counterproductive.
+**LLM collusion beyond pricing.** Agrawal et al. (2025) study LLM agent collusion in double auctions; Keppo et al. (2026) examine its fragility, reporting that size heterogeneity can stabilise rather than disrupt collusion and can produce leader–follower dynamics. Lekeas and Stamatopoulos (2026) find 70B/72B-class models locking into cooperation in named Prisoner's Dilemma prompts where 8B models stay nearer Nash play. These make scale-sensitivity of LLM strategic behaviour a live hypothesis rather than a novel one; our §4.1 contributes a controlled within-family ladder in a single pricing task, together with the message-content inversion, in a literature where such ladders remain sparse. Capability is not a universal proxy for cooperation, however — Yadav et al. (2026) find stronger general models cooperating *less* in zero-cost collaboration — so we avoid framing scale as uniformly pro-collusive.
 
-**Representation engineering.** Zou et al. (2023), and contrastive activation addition (Rimsky et al., 2024; Turner et al.), supply the difference-in-means direction and injection method used in §4.8.
+**Covert coordination.** Motwani et al. (2024) and Baranchuk et al. (2024) show secret collusion among generative agents via steganography, with a capability jump at the frontier; Mathew et al. (2024) demonstrate steganographic collusion emerging from mis-specified incentives and surviving paraphrasing; Rippin et al. (2026) show tool use making covert schemes undetectable in practice. This literature is the motivation for restricting channel bandwidth as a defence, and it is precisely that defence our §4.3 finds counterproductive. Auditing work in the same vein (Nakamura et al., 2026; Tailor, 2025) argues for capacity-aware detectors with explicit false-positive control, which is the frame our §4.6 keyword result sits in.
+
+**Communication and cartels.** The human-experiment literature finds richer communication *more* collusive: Fonseca and Normann (2012) on communication raising oligopoly profits, Harrington et al. (2016) on unrestricted chat beating price announcements, Cooper and Kühn (2009) on limited message spaces producing collusion that then collapses, and Awaya and Krishna (2016) on communication improving monitoring. Our §4.3 reverses this for LLM agents. The reconciling literature is on focal points: Dugar and Shahriar (2018) find restricted protocols carrying a salient signal matching free-form cheap talk, and Crawford et al. (2008) and Arjona et al. (2022) document the power and the limits of salience in coordination.
+
+**Representation engineering.** Zou et al. (2023), and contrastive activation addition (Rimsky et al., 2024), supply the difference-in-means direction and injection method used in §4.8. On the gap between decoding and causation, Geiger et al. (2023) give the causal-abstraction framing and Tiwari et al. (2026), Fadnavis et al. (2026) and Liao & Cao (2026) measure the dissociation directly; Canby et al. (2024) document a completeness–selectivity tradeoff in causal probing. Braun et al. (2025) find steering reliability depending on whether the target behaviour has a coherent linear direction, which is one reading of the depth regime change in our §4.8. On probing before generation, Di Cicco (2026) shows code correctness linearly decodable from final-prompt-token states, while Ruan et al. (2026) find agent-episode probes near chance early and strongly predictive after a few rounds, and Chiu and Liu (2026) find early-step signal reflecting prompt difficulty rather than outcome — a temporal pattern our §4.7 reproduces in a market setting. Sahoo et al. (2026) show linear probes recovering task *format* rather than reasoning mode, the confound our within-condition analysis is designed to remove.
 
 ## 3. Methodology
 
@@ -143,6 +147,12 @@ Free text produced negotiation *with normative content* — "fair", "benefits al
 
 Because the ratchet saturates at the top of the action space, Δ = 0.693 is a **lower bound** set by our grid, not a measurement of where the agents would stop.
 
+**This runs against the human-experiment literature, which is why we flag it loudly.** Cartel experiments consistently find that *richer* communication sustains collusion better: unrestricted chat outperforms structured price announcements across market structures (Harrington et al., 2016), limited message spaces can produce an initial burst of collusion that then collapses because agents cannot communicate contingent punishment (Cooper & Kühn, 2009), and communication raises oligopoly profits generally (Fonseca & Normann, 2012). Our result is the reverse.
+
+The bridge is the focal-point literature rather than the cartel literature. Dugar and Shahriar (2018) find that *restricted* protocols encoding a salient signal can match free-form cheap talk, which suggests what matters is not bandwidth but whether the channel compresses players onto a common focal signal. Our transcripts are consistent with that reading: free text carried normative content ("fair", "benefits all") that anchored the agreement below the joint-profit optimum, while `RAISE` carries a focal instruction and nothing else. We note that the mechanism is inferred from transcripts rather than isolated experimentally, and that a direct test — removing fairness language from a free-text channel while leaving bandwidth intact — would separate the two explanations.
+
+**The maverick result, by contrast, is confirmation.** That entry or a non-cooperative rival destabilises tacit collusion is established: Bourreau, Sun and Verboven (2021) document it in mobile telecommunications, and post-cartel experiments show that rematching with strangers prevents collusive carryover by breaking stable cooperative expectations (Chowdhury & Crede, 2020). We report our maverick condition as evidence that the environment reproduces a known antitrust result, which is a check on the setup as much as a finding.
+
 **Replication.** An independent 72B run at different seeds (8 fresh episodes per condition, run for the activation capture of §4.7) reproduces all three effects: free text 0.196 (vs 0.190), canonical channel **0.742** (vs 0.693), maverick −0.027 (vs −0.012). The bandwidth-backfire result is therefore not a single-sample artefact.
 
 ### 4.4 At small scale, collusion needs scaffolding
@@ -163,6 +173,8 @@ The full 14B factorial (16 episodes × 24 rounds):
 So 14B is not incapable of collusion — it requires a prompt-level nudge. A single sentence permitting the firms to organise the market (E_ORG) produces Δ = 0.231. Merely **telling agents that an aggressive price-cutter may exist, when none does** (M_RUMOUR), produces Δ = 0.267 — the strongest emergent collusion at this scale. An actual maverick produces none.
 
 A false warning about a defector creates the cartel it warned about. Belief about peers builds coordination; the peer's actual presence destroys it.
+
+This runs against the modal finding in repeated games, where strategic uncertainty and observed defection *reduce* cooperation (Dal Bó & Fréchette, 2018; Vespa et al., 2021; Miranda-Rodríguez et al., 2026). The minority literature that fits it is about **false public beliefs and shared threat** rather than bilateral mistrust: Morsky and Akçay (2020) show false beliefs bootstrapping cooperative communities through social norms, and De Jaegher (2020) reviews common-enemy effects raising within-group cooperation. Our M_RUMOUR condition announces a threat to *all* firms simultaneously, which is a common-enemy manipulation rather than a partner-specific suspicion, and the common-enemy reading predicts the direction we observe. Distinguishing it from an altered-monitoring-beliefs account would require a condition where the warning is private to one firm, which we did not run.
 
 Note also E_CANON at 14B: mean −0.007 but sd 0.162. The ratchet mechanism of §4.3 is already present at 14B; it simply fires rarely. The 72B result is amplification, not a new capability.
 
@@ -186,6 +198,8 @@ The mechanism differs accordingly. E_ORG is explicit agreement; M_RUMOUR is inde
 ### 4.6 Dynamic detectors invert
 
 The reaction coefficient — the OLS slope of a firm's price change on its rivals' lagged price change — is approximately **zero** under a stable cartel and **+0.12 to +0.37** under competition. A stable cartel is unresponsive *because* it is stable: there is nothing to react to. Price-responsiveness detectors therefore rank the most collusive markets as the least suspicious.
+
+This is a sharpened instance of a long-settled point in competition law rather than a new one. Conscious parallelism has never been sufficient to establish agreement; the doctrine requires "plus factors" — reciprocal assurances, information exchange, unilateral signalling — that distinguish coordination from intelligent adaptation to rivals (Vaska, 1985; Dibadj, 2008; Andreoli-Versbach & Franck, 2015). What our measurement adds is that in this setting the naive *dynamic* refinement of the parallelism test does not merely fail, it inverts: the most collusive market scores lowest. Harrington (2026) makes a related point in the opposite direction, that better demand-responsiveness can itself facilitate collusion, so high responsiveness is not uniquely suspicious either.
 
 Keyword auditing fails in the opposite direction: a naive coordination lexicon flagged 42–51% of messages in conditions whose true cartel-language rate was 0–3%, an 18–25× over-count. The over-count narrows (≈1.6×) where collusion is real. Keyword auditing therefore false-positives heavily in competitive markets — the regime where an auditor most needs to be right.
 
@@ -293,7 +307,9 @@ Both clear their shuffled controls, so both effects depend on orientation. But t
 
 The Δ it reaches is worth one remark. Injecting partner-trust produces Δ = 0.266, against M_RUMOUR's behavioural Δ = 0.267 — the condition that tells agents a price-cutter may exist when none does. The agreement to three decimals is coincidence, but a candidate mechanism reproducing the effect size of the behavioural condition it was meant to explain is the kind of convergence worth recording.
 
-**Decodability and predictiveness do not track causal potency.** Taken with §4.9 this is the sharpest methodological point available from our data. The partner-trust variable is *more* linearly decodable than the collusion variable (Cohen's d 7.2 at L40) and a *better* predictor of realised collusion across emergent episodes (r = 0.634 vs 0.544) — yet it is roughly fivefold weaker causally. A probe that ranks features by how well they are encoded, or by how well they predict the outcome, would have selected the wrong one to intervene on.
+**Decodability and predictiveness do not track causal potency.** That probe accuracy does not imply causal importance is established rather than new: it follows from the causal-abstraction framing of Geiger et al. (2023), and recent work measures the dissociation directly — Tiwari et al. (2026) find weak overlap between probe-ranked and causally-ranked features, Fadnavis et al. (2026) report probe directions near-orthogonal to the mediator subspace that actually drives behaviour, and Liao & Cao (2026) show strong decodability coexisting with causal inertness until the training objective makes the feature load-bearing.
+
+Our contribution is an instance in a multi-agent setting with an unusually sharp ordering, because the *better*-encoded feature is the *weaker* driver. The partner-trust variable is more linearly decodable than the collusion variable (Cohen's d 7.2 at L40 at the extraction contrast) and a better predictor of realised collusion across emergent episodes (r = 0.634 vs 0.544), yet it is roughly fivefold weaker causally. Feature-selection by encoding strength *or* by predictive power would both have chosen the wrong direction to intervene on. For auditing specifically this matters: a monitoring pipeline is naturally built by ranking candidate features on how well they predict the behaviour of interest, which is exactly the criterion that fails here.
 
 **Scope of the claim.** The intervention adds the direction at every sequence position, so it modifies how the model reads its own prompt as well as its decision state. Note that this is *broader* than Contrastive Activation Addition as published (Rimsky et al., 2024), which adds the vector at token positions after the user's prompt. The supported claim is therefore that adding this direction throughout the forward pass makes the model behave as if instructed to collude — closer to activation-space prompt injection than to flipping an isolated decision variable. Position-restricted variants (CAA-standard generated-positions-only, and final-position-only) would license progressively stronger readings; the implementation supports all three and the restricted runs are reported where available.
 
@@ -324,7 +340,11 @@ Surface textual contrasts are most separable early, where representations are cl
 
 Three measurements on the captured states, all at 14B.
 
-**Effective dimensionality collapses with depth.** The participation ratio of the state covariance — (Σλ)²/Σλ², an effective dimension count — falls from 19.1 at L0 to 7.6 at L44. At L40 the states occupy roughly **8 effective dimensions out of 5120**. This is the simplest available explanation both for why linear probes work well at depth and for why a single injected direction at L40 can move behaviour so far: at that depth there is little room for the state to vary in.
+**Effective dimensionality contracts with depth.** The participation ratio of the state covariance — (Σλ)²/Σλ², an effective dimension count — falls from 19.1 at L0 to 7.6 at L44. At L40 the states occupy roughly **8 effective dimensions out of 5120**.
+
+The direction of this trend is consistent with prior geometry work: Valeriani et al. (2023) report intrinsic dimensionality expanding early and contracting through middle and later depth in large transformers. We report it as confirmation in a new task domain rather than as a new phenomenon.
+
+It is tempting to read the contraction as the explanation for why a single injected direction at L40 moves behaviour so far — little room for the state to vary, so one direction covers much of it. We resist that inference. Sarkar and Deka (2026) show that representational and *causal* dimensionality diverge, so a falling participation ratio does not license a claim about falling causal degrees of freedom. The co-occurrence of low effective dimension and high steering potency at the same depth is suggestive and we report it as such; establishing the link would require measuring causal dimensionality directly, which we have not done.
 
 **The collusion and partner-trust directions are nearly orthogonal.** Cosine similarity between them runs 0.08–0.11 across layers (83–85°), against a chance level of 1/√5120 ≈ 0.014 for this dimensionality. They are therefore about six times more aligned than random, but are not the same axis. The partner-trust contrast is not the collusion contrast rediscovered under different wording.
 
@@ -367,11 +387,51 @@ The intervention that worked — one participant with a different objective — 
 
 ## References
 
-- Calvano, E., Calzolari, G., Denicolò, V., Pastorello, S. (2020). *Artificial Intelligence, Algorithmic Pricing, and Collusion.* **American Economic Review** 110(10): 3267–3297. doi:10.1257/aer.20190623
+- Agrawal, K., et al. (2025). *Evaluating LLM Agent Collusion in Double Auctions.* arXiv:2507.01413.
+- Andreoli-Versbach, P., Franck, J. (2015). *Econometric Evidence to Target Tacit Collusion in Oligopolistic Markets.* J. Competition Law & Economics 11: 463–492.
+- Arjona, D. R., Sitzia, S., Zheng, J.-W. (2022). *Overcoming coordination failure in games with focal points.* Games Econ. Behav. 136: 505–523.
+- Awaya, Y., Krishna, V. (2016). *On Communication and Collusion.* American Economic Review 106: 285–315.
+- Baranchuk, M., et al. (2024). *Secret Collusion among AI Agents: Multi-Agent Deception via Steganography.* NeurIPS 37.
+- Bourreau, M., Sun, Y., Verboven, F. (2021). *Market Entry, Fighting Brands, and Tacit Collusion.* American Economic Review.
+- Braun, J., et al. (2025). *Understanding (Un)Reliability of Steering Vectors in Language Models.* arXiv:2505.22637.
+- Calvano, E., Calzolari, G., Denicolò, V., Pastorello, S. (2020). *Artificial Intelligence, Algorithmic Pricing, and Collusion.* American Economic Review 110(10): 3267–3297. doi:10.1257/aer.20190623
+- Calvano, E., Calzolari, G., Denicolò, V., Harrington, J., Pastorello, S. (2020). *Protecting consumers from collusive prices due to AI.* Science 370: 1040–1042.
+- Canby, M. E., et al. (2024). *How Reliable are Causal Probing Interventions?*
+- Chiu, G.-M., Liu, J.-Y. (2026). *Probing Functional Correctness in Diffusion Language Models.* ACL SRW.
+- Chowdhury, S. M., Crede, C. J. (2020). *Post-cartel tacit collusion.* Int. J. Industrial Organization.
+- Cooper, D. J., Kühn, K.-U. (2009). *Communication, Renegotiation, and the Scope for Collusion.*
+- Crawford, V. P., Gneezy, U., Rottenstreich, Y. (2008). *The Power of Focal Points Is Limited.* American Economic Review 98: 1443–1458.
+- Dal Bó, P., Fréchette, G. R. (2018). *On the Determinants of Cooperation in Infinitely Repeated Games: A Survey.* J. Economic Literature 56: 60–114.
+- De Jaegher, K. (2020). *Common-Enemy Effects.* J. Economic Surveys.
+- Di Cicco, C. (2026). *Code Correctness Is Linearly Decodable from LLM Hidden States Before Generation.* arXiv:2606.14530.
+- Dibadj, R. (2008). *Conscious Parallelism Revisited.* San Diego Law Review 47: 589.
+- Dugar, S., Shahriar, Q. (2018). *Restricted and free-form cheap-talk and the scope for efficient coordination.* Games Econ. Behav. 109: 294–310.
+- Fadnavis, S., Kanakaraj, P., Wyss, F. I. (2026). *When and How Long? The Readout-Mediator Angle in Temporal Reasoning.* arXiv:2605.29126.
 - Fish, S., Gonczarowski, Y. A., Shorrer, R. I. (2024). *Algorithmic Collusion by Large Language Models.* arXiv:2404.00806.
+- Fonseca, M. A., Normann, H.-T. (2012). *Explicit vs. Tacit Collusion.* European Economic Review 56: 1759–1772.
+- Geiger, A., et al. (2023). *Causal Abstraction: A Theoretical Foundation for Mechanistic Interpretability.* JMLR 26.
+- Harrington, J., González, R. H., Kujal, P. (2016). *The relative efficacy of price announcements and express communication for collusion.* JEBO 128: 251–264.
+- Harrington, J. E. (2026). *Hub-and-Spoke Collusion With a Third-Party Pricing Algorithm.* J. Industrial Economics.
+- Keppo, J., Li, Y., Tsoukalas, G., Yuan, N. (2026). *On the Fragility of AI Agent Collusion.* arXiv:2603.20281.
+- Lekeas, P. V., Stamatopoulos, G. (2026). *How a Cooperative-Override Circuit Suppresses Nash Play in Large Language Models.* arXiv:2604.27167.
+- Liao, C.-T., Cao, X.-Z. (2026). *The Objective Decides: When a Learned Dynamics Model Uses a Conserved Quantity.* arXiv:2607.03728.
+- Mathew, Y., et al. (2024). *Hidden in Plain Text: Emergence & Mitigation of Steganographic Collusion in LLMs.* arXiv:2410.03768.
+- Miranda-Rodríguez, R. A., et al. (2026). *Morality and cooperative behavior after adverse experiences in the prisoner's dilemma game.* Ethics & Behavior.
+- Morsky, B., Akçay, E. (2020). *False beliefs can bootstrap cooperative communities through social norms.* Evolutionary Human Sciences 3.
+- Motwani, S., et al. (2024). *Secret Collusion Among Generative AI Agents.* arXiv:2402.07510.
+- Nakamura, M., et al. (2026). *Colosseum: Auditing Collusion in Cooperative Multi-Agent Systems.* arXiv:2602.15198.
+- Rimsky, N., Gabrieli, N., Schulz, J., Tong, M., Hubinger, E., Turner, A. M. (2024). *Steering Llama 2 via Contrastive Activation Addition.* ACL 2024, 15504–15522. arXiv:2312.06681.
+- Rippin, J. L., et al. (2026). *Tool Use Enables Undetectable Steganography in Multi-Agent LLM Systems.* arXiv:2606.28425.
+- Ruan, K., et al. (2026). *Doomed from the Start: Early Abort of LLM Agent Episodes via a Recall-Controlled Probe Cascade.* arXiv:2607.06503.
+- Sahoo, S., Jain, V., Chadha, A., Chaudhary, D. (2026). *Linear Probes Detect Task Format, Not Reasoning Mode in Language Model Hidden States.* arXiv:2606.02907.
+- Sarkar, N., Deka, D. J. (2026). *Causal Dimensionality of Transformer Representations.* arXiv:2605.08740.
+- Tailor, O. (2025). *Audit the Whisper: Detecting Steganographic Collusion in Multi-Agent LLMs.* arXiv:2510.04303.
+- Tiwari, D., et al. (2026). *Decodability is Not Causality: Dissociating Probe Readouts from Behavioral Drivers via SAE Decomposition.* arXiv:2609.18080.
+- Valeriani, L., et al. (2023). *The geometry of hidden representations of large transformer models.* arXiv:2302.00294.
+- Vaska, M. (1985). *Conscious Parallelism and Price Fixing: Defining the Boundary.* U. Chicago Law Review 52.
+- Vespa, E. I., Weidman, T., Wilson, A. J. (2021). *Testing Models of Strategic Uncertainty.* JEEA.
+- Yadav, A., Black, S., Sourbut, O. (2026). *More Capable, Less Cooperative? When LLMs Fail At Zero-Cost Collaboration.* arXiv:2604.07821.
 - Zou, A., et al. (2023). *Representation Engineering: A Top-Down Approach to AI Transparency.* arXiv:2310.01405.
-- Rimsky, N., Gabrieli, N., Schulz, J., Tong, M., Hubinger, E., Turner, A. M. (2024). *Steering Llama 2 via Contrastive Activation Addition.* **ACL 2024**, pp. 15504–15522. arXiv:2312.06681.
-- Tomašev, N., et al. (2026). *(markets in multi-agent systems — as cited in the sprint brief; verify before submission.)*
 
 ## Appendix A — Reproducibility
 
