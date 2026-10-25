@@ -7,8 +7,10 @@ When do LLM pricing agents collude, what carries the coordination, and which int
 This repo contains a repeated Bertrand oligopoly where the competitive and joint-profit prices are solved analytically, so the collusion label needs no rubric and no LLM judge. On top of it sits a residual-stream capture, probing and steering pipeline that runs identically on a Modal A100 cluster or a 6 GB laptop GPU.
 
 Submitted to the **Apart Research AI Collusion Research Sprint**, October 2026 (tracks 1 and 3). Paper: [`report/Swayambhu_Apart_submission.pdf`](report/Swayambhu_Apart_submission.pdf).
+
 Paper title: Pushing Back, Not Deleting: Scale, Channels and Causal Control of Collusion Between LLM Pricing Agents
 Project title: Swayambhu
+
 ---
 
 ## Headline results
