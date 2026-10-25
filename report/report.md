@@ -311,7 +311,29 @@ The Δ it reaches is worth one remark. Injecting partner-trust produces Δ = 0.2
 
 Our contribution is an instance in a multi-agent setting with an unusually sharp ordering, because the *better*-encoded feature is the *weaker* driver. The partner-trust variable is more linearly decodable than the collusion variable (Cohen's d 7.2 at L40 at the extraction contrast) and a better predictor of realised collusion across emergent episodes (r = 0.634 vs 0.544), yet it is roughly fivefold weaker causally. Feature-selection by encoding strength *or* by predictive power would both have chosen the wrong direction to intervene on. For auditing specifically this matters: a monitoring pipeline is naturally built by ranking candidate features on how well they predict the behaviour of interest, which is exactly the criterion that fails here.
 
-**Scope of the claim.** The intervention adds the direction at every sequence position, so it modifies how the model reads its own prompt as well as its decision state. Note that this is *broader* than Contrastive Activation Addition as published (Rimsky et al., 2024), which adds the vector at token positions after the user's prompt. The supported claim is therefore that adding this direction throughout the forward pass makes the model behave as if instructed to collude — closer to activation-space prompt injection than to flipping an isolated decision variable. Position-restricted variants (CAA-standard generated-positions-only, and final-position-only) would license progressively stronger readings; the implementation supports all three and the restricted runs are reported where available.
+**The effect does not require touching the prompt: editing the decision token alone suffices.** Our default injects at every sequence position, which is *broader* than Contrastive Activation Addition as published (Rimsky et al., 2024), where the vector is added after the user's prompt. That raised the possibility that the result was activation-space prompt injection — rewriting how the model reads its own instructions — rather than an edit to the decision state. Restricting the intervention to the **final position only** settles it:
+
+| cell | all positions | final position only |
+|---|---|---|
+| L36, α = 0.40 | 0.768 | **0.903** |
+| L36, α = 0.60 | — | **1.015** |
+| L40, α = 0.40 | 0.998 | **1.025** |
+| L40, α = 0.60 | — | 1.013 |
+
+Single-position injection is at least as effective everywhere we compared and clearly stronger at L36, at ≤ 0.3% parse failure. (At L40, α = 0.80 the arm breaks the model — 11.8% parse failure — and is discarded.) The intervention therefore does not need the prompt representation at all; adding the direction at the one position where the price decision is formed is sufficient to drive a competitive market to a perfect cartel. We read this as a decision-state edit rather than prompt injection.
+
+**Ablation does not break an established cartel.** The complement to induction is removal: if the direction is what sustains collusion, projecting it out of the residual stream should break one. It does not. At 72B on E_CANON — the strongest collusion in the study — over 24 rounds:
+
+| arm | Δ (all rounds) | Δ (final 10) | sd | parse failures |
+|---|---|---|---|---|
+| baseline | +0.409 | +0.790 | 0.186 | 0.0% |
+| ablated at L64 | +0.458 | **+0.857** | 0.038 | 0.0% |
+
+Ablation left collusion intact and nominally slightly higher, well inside the baseline's own spread. So the same direction that *induces* a cartel when added does not *dissolve* one when removed.
+
+The asymmetry has a natural reading, though we have not tested it. By the time a cartel is established, the evidence sustaining it sits in the context — twenty rounds of visibly rising prices and `RAISE` signals — not in a transient internal variable. Deleting a direction at one layer does not delete the history that re-creates it on the next forward pass. This is consistent with §4.7, where the decodable signal appears only after the model has processed that history. Caveats: a single layer and a single ablation geometry were tried; multi-layer or subspace ablation may behave differently, and ablating *before* a cartel forms is a different experiment we did not run.
+
+**Consequence for countermeasures.** Taken with §4.3 this completes an unflattering picture for intervention-side defences. Restricting channel bandwidth made collusion worse; ablating the causal direction did nothing; the one intervention that worked was behavioural — inserting a single agent with a different objective.
 
 **Semantically matched placebos.** The random and shuffled controls rule out magnitude effects but not the objection that the direction encodes *prompt wording*, since it is extracted from conditions that differ by system-prompt text. We therefore built two placebo contrasts of comparable textual difference (within 15 characters of the real contrast) and steered with them at the same layers and doses:
 
