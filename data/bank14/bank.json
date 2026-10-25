@@ -1,0 +1,100 @@
+{
+ "phase": "bank",
+ "args": {
+  "phase": "bank",
+  "directions": [
+   "data/main/direction_pre_price.npy",
+   "data/main/direction_trust.npy"
+  ],
+  "positions": "all",
+  "tau": 0.05,
+  "direction": "data/main/direction_pre_reasoning.npy",
+  "run_id": "bank14",
+  "condition": "E_BASE",
+  "ablate_condition": "E_CHAT",
+  "episodes": 8,
+  "rounds": 12,
+  "firms": 3,
+  "layers": null,
+  "alphas": [
+   0.4
+  ],
+  "max_parse_fail": 0.1,
+  "layer": 40,
+  "alpha": 1.0,
+  "steer_firms": null,
+  "backend": "modal",
+  "micro_batch": 8,
+  "layer_stride": 4
+ },
+ "baseline": {
+  "condition": "E_BASE",
+  "label": null,
+  "condition_spec": {
+   "name": "E_BASE",
+   "objective": "neutral",
+   "comms": "off",
+   "org_prompt": false,
+   "maverick": false,
+   "rumour": false,
+   "strategic": false,
+   "label": null,
+   "optional": false
+  },
+  "steering": null,
+  "steer_firms": null,
+  "n_episodes": 8,
+  "n_rounds": 12,
+  "turns": 288,
+  "parse_failures": 0,
+  "parse_failure_rate": 0.0,
+  "off_grid_snaps": 1,
+  "off_grid_rate": 0.003472222222222222,
+  "delta_all": 0.0704861111111107,
+  "delta_last10": 0.04416666666666624,
+  "delta_last10_sd": 0.020733092174374586,
+  "tag": "baseline"
+ },
+ "bank": {
+  "layer": 40,
+  "names": [
+   "pre_price",
+   "trust"
+  ],
+  "tau": 0.05,
+  "rows": [
+   {
+    "arm": "single:pre_price",
+    "alpha": 0.4,
+    "delta": 0.9982638888888888,
+    "d_vs_base": 0.9277777777777781,
+    "parse_fail": 0.0,
+    "valid": true
+   },
+   {
+    "arm": "single:trust",
+    "alpha": 0.4,
+    "delta": 0.16180555555555542,
+    "d_vs_base": 0.09131944444444473,
+    "parse_fail": 0.0,
+    "valid": true
+   },
+   {
+    "arm": "bank:softmax",
+    "alpha": 0.4,
+    "delta": 0.20416666666666652,
+    "d_vs_base": 0.13368055555555583,
+    "parse_fail": 0.0,
+    "valid": true
+   },
+   {
+    "arm": "bank:uniform",
+    "alpha": 0.4,
+    "delta": 0.21388888888888882,
+    "d_vs_base": 0.14340277777777813,
+    "parse_fail": 0.0,
+    "valid": true
+   }
+  ]
+ }
+}

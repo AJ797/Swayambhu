@@ -1,0 +1,38 @@
+p_nash=1.3702 p_monopoly=2.0000
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-hspmyp7nwPVL4qI6Nyc6ZJ
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:08<01:02,  8.89s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:15<00:46,  7.81s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:18<00:27,  5.60s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:22<00:19,  4.78s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:25<00:12,  4.24s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:28<00:07,  3.64s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:32<00:03,  3.70s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:32<00:00,  2.72s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:32<00:00,  4.08s/it]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB
+
+baseline E_BASE: delta_all=+0.045 (parse failures 0.3%)
+
+  A cell is INVALID when steering breaks output formatting: the
+  fallback repeats the previous price (grid midpoint on round 1),
+  which manufactures delta ~ 0.5 that looks like induced collusion.
+
+   layer   alpha    delta  d_vs_base    fail  status
+      40    0.60    0.494     +0.449    0.6%  ok
+
+  1 usable cells, 0 discarded for broken output
+  largest valid |effect|: L40 alpha=0.6 delta +0.494 (+0.449 vs baseline)
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/ariet-jha/main/ap-hspmyp7nwPVL4qI6Nyc6ZJ
+
+wrote data\onefirm2\sweep.json
+EXIT=0

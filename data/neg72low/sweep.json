@@ -1,0 +1,91 @@
+{
+ "phase": "sweep",
+ "args": {
+  "phase": "sweep",
+  "directions": null,
+  "positions": "all",
+  "tau": 0.05,
+  "direction": "data/cap72/direction_pre_price.npy",
+  "run_id": "neg72low",
+  "condition": "E_CANON",
+  "ablate_condition": "E_CHAT",
+  "episodes": 8,
+  "rounds": 24,
+  "firms": 3,
+  "layers": [
+   64
+  ],
+  "alphas": [
+   -0.1,
+   -0.2
+  ],
+  "max_parse_fail": 0.1,
+  "layer": null,
+  "alpha": 1.0,
+  "steer_firms": null,
+  "backend": "modal",
+  "micro_batch": 8,
+  "layer_stride": 4
+ },
+ "baseline": {
+  "condition": "E_CANON",
+  "label": null,
+  "condition_spec": {
+   "name": "E_CANON",
+   "objective": "neutral",
+   "comms": "canon",
+   "org_prompt": false,
+   "maverick": false,
+   "rumour": false,
+   "strategic": false,
+   "label": null,
+   "optional": false
+  },
+  "steering": null,
+  "steer_firms": null,
+  "n_episodes": 8,
+  "n_rounds": 24,
+  "turns": 576,
+  "parse_failures": 0,
+  "parse_failure_rate": 0.0,
+  "off_grid_snaps": 7,
+  "off_grid_rate": 0.012152777777777778,
+  "delta_all": 0.409375,
+  "delta_last10": 0.7899999999999998,
+  "delta_last10_sd": 0.18602568520383278,
+  "tag": "baseline"
+ },
+ "sweep": [
+  {
+   "layer": null,
+   "alpha": 0.0,
+   "delta": 0.409375,
+   "parse_fail": 0.0,
+   "valid": true
+  },
+  {
+   "layer": 64,
+   "alpha": -0.1,
+   "delta": 0.3956597222222221,
+   "d_vs_base": -0.013715277777777868,
+   "parse_fail": 0.0,
+   "valid": true
+  },
+  {
+   "layer": 64,
+   "alpha": -0.2,
+   "delta": 0.22829861111111088,
+   "d_vs_base": -0.1810763888888891,
+   "parse_fail": 0.0,
+   "valid": true
+  }
+ ],
+ "best": {
+  "layer": 64,
+  "alpha": -0.2,
+  "delta": 0.22829861111111088,
+  "d_vs_base": -0.1810763888888891,
+  "parse_fail": 0.0,
+  "valid": true
+ }
+}

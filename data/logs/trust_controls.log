@@ -1,0 +1,33 @@
+p_nash=1.3702 p_monopoly=2.0000
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-VwzWU6anJ6Kk4HY21Mmkds
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:02<00:14,  2.12s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:04<00:12,  2.14s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:06<00:10,  2.16s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:08<00:08,  2.14s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:10<00:06,  2.13s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:12<00:04,  2.15s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:15<00:02,  2.17s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:16<00:00,  1.80s/it]Loading checkpoint shards: 100%|██████████| 8/8 [00:16<00:00,  2.01s/it]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB
+
+baseline: delta=+0.070
+
+  variant            alpha    delta  d_vs_base
+  real                0.60    0.266     +0.195
+  random_matched      0.60    0.141     +0.071
+  shuffled_dims       0.60    0.055     -0.016
+Stopping app - local entrypoint completed.
+Runner terminated.
+✓ App completed. View run at 
+https://modal.com/apps/ariet-jha/main/ap-VwzWU6anJ6Kk4HY21Mmkds
+
+wrote data\trust14\controls.json
+EXIT=0

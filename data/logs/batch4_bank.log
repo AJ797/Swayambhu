@@ -1,0 +1,81 @@
+
+=== [4] gated bank comparison ===
+p_nash=1.3702 p_monopoly=2.0000
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-DDbpSYad4Bf02rayPsgrc4
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:02<00:20,  2.97s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:05<00:17,  2.98s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:08<00:15,  3.00s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:12<00:12,  3.06s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:15<00:09,  3.01s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:18<00:05,  2.99s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:20<00:02,  2.96s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:22<00:00,  2.43s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:22<00:00,  2.78s/it]
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+
+bank at L40: ['pre_price', 'trust']  tau=0.05
+baseline: delta=+0.070
+
+  arm                      alpha    delta  d_vs_base    fail
+  single:pre_price          0.20    0.209     +0.139    0.0%
+  single:trust              0.20    0.144     +0.074    0.0%
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/modal_app.py", line 265, in step
+    with torch.no_grad(), self._intervention(steering):
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/modal_app.py", line 143, in _intervention
+    v = self.torch.tensor(spec["vector"], dtype=self.torch.float32, device="cuda")
+                          ~~~~^^^^^^^^^^
+KeyError: 'vector'
+Stopping app - uncaught exception raised in remote container: KeyError('vector').
+Runner terminated.
+Traceback (most recent call last):
+  File "E:\empire\Swayambhu\scripts\steering.py", line 410, in <module>
+    main()
+  File "E:\empire\Swayambhu\scripts\steering.py", line 402, in main
+    body(runner, info["n_layers"])
+  File "E:\empire\Swayambhu\scripts\steering.py", line 355, in body
+    record("bank:softmax", {"layer": L, "mode": "bank", "bank": bank,
+  File "E:\empire\Swayambhu\scripts\steering.py", line 339, in record
+    _, st = _run(runner, cond, cfg, args, spec, f"{label}_a{a}")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\scripts\steering.py", line 102, in _run
+    eps, stats = run_condition(
+                 ^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\swayambhu\env.py", line 155, in run_condition
+    out = runner.step.remote(
+          ^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_object.py", line 49, in wrapped
+    return await method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_functions.py", line 2081, in remote
+    return await self._call_function(args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_functions.py", line 2018, in _call_function
+    return await invocation.run_function()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_functions.py", line 517, in run_function
+    return await _process_result(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_utils\function_utils.py", line 572, in _process_result
+    raise exc_with_hints(exc)
+  File "<ta-01M5RQVJD6PEPNZS3JGKNKJF7R>:/root/modal_app.py", line 265, in step
+  File "<ta-01M5RQVJD6PEPNZS3JGKNKJF7R>:/root/modal_app.py", line 143, in _intervention
+KeyError: 'vector'
+   exit=1

@@ -1,0 +1,51 @@
+p_nash=1.3702 p_monopoly=2.0000
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-v4J8QT2bhrNUceAvaNjPhF
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:02<00:15,  2.22s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:04<00:13,  2.24s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:06<00:11,  2.24s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:08<00:09,  2.25s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:11<00:06,  2.25s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:13<00:04,  2.25s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:15<00:02,  2.23s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:16<00:00,  1.82s/it]Loading checkpoint shards: 100%|██████████| 8/8 [00:16<00:00,  2.08s/it]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB
+
+baseline E_BASE: delta_all=+0.070 (parse failures 0.0%)
+
+  A cell is INVALID when steering breaks output formatting: the
+  fallback repeats the previous price (grid midpoint on round 1),
+  which manufactures delta ~ 0.5 that looks like induced collusion.
+
+   layer   alpha    delta  d_vs_base    fail  status
+      32   -0.40    0.130     +0.059    0.0%  ok
+      32   -0.20    0.087     +0.016    0.0%  ok
+      32    0.20    0.112     +0.041    0.0%  ok
+      32    0.40    0.066     -0.005    0.3%  ok
+      32    0.60    0.143     +0.073    0.7%  ok
+      36   -0.40    0.070     -0.001    0.0%  ok
+      36   -0.20    0.072     +0.001    0.0%  ok
+      36    0.20    0.113     +0.043    0.0%  ok
+      36    0.40    0.222     +0.151    0.0%  ok
+      36    0.60    0.266     +0.195    0.3%  ok
+      40   -0.40    0.042     -0.028    0.0%  ok
+      40   -0.20    0.050     -0.020    0.0%  ok
+      40    0.20    0.144     +0.074    0.0%  ok
+      40    0.40    0.162     +0.091    0.0%  ok
+      40    0.60    0.262     +0.192    1.4%  ok
+
+  15 usable cells, 0 discarded for broken output
+  largest valid |effect|: L36 alpha=0.6 delta +0.266 (+0.195 vs baseline)
+Stopping app - local entrypoint completed.
+✓ App completed. View run at 
+https://modal.com/apps/ariet-jha/main/ap-v4J8QT2bhrNUceAvaNjPhF
+
+wrote data\trust14\sweep.json
+EXIT=0

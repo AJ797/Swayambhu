@@ -1,0 +1,33 @@
+p_nash=1.3702 p_monopoly=2.0000
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-fqr2Zssy37KpSOxjU6HH2E
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:02<00:14,  2.08s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:04<00:12,  2.13s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:06<00:10,  2.15s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:08<00:08,  2.15s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:10<00:06,  2.14s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:12<00:04,  2.14s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:14<00:02,  2.13s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:15<00:00,  1.74s/it]Loading checkpoint shards: 100%|██████████| 8/8 [00:15<00:00,  1.98s/it]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB
+
+competence battery (cost 100 vs cost 150; price should RISE)
+
+  condition               p(cost100)  p(cost150)  elastic    fmt   ok
+  none                   162.33333333333334 155.14285714285714     -7.2   75%   NO
+  steer_L40_a0.4               200.0       200.0     +0.0   62%   NO
+  ablate_L40             162.28571428571428 162.28571428571428     +0.0   88%   NO
+Stopping app - local entrypoint completed.
+Runner terminated.
+✓ App completed. View run at 
+https://modal.com/apps/ariet-jha/main/ap-fqr2Zssy37KpSOxjU6HH2E
+
+wrote data\steer14\competence.json
+COMP_EXIT=0

@@ -1,0 +1,35 @@
+
+=== done. summaries: ===
+--- data/logs/batch1_ablate72.log
+  ablated L64  delta=+0.253 (+0.125)
+--- data/logs/batch2_placebo.log
+      36    0.40    0.159     +0.089    1.4%  ok
+      36    0.60    0.131     +0.060    6.9%  ok
+      40    0.20    0.126     +0.056    0.0%  ok
+      40    0.40    0.094     +0.023    0.3%  ok
+      40    0.60    0.115     +0.044    0.7%  ok
+  largest valid |effect|: L36 alpha=0.4 delta +0.159 (+0.089 vs baseline)
+baseline E_BASE: delta_all=+0.070 (parse failures 0.0%)
+      36    0.20    0.076     +0.006    0.0%  ok
+      36    0.40    0.142     +0.071    0.0%  ok
+      36    0.60    0.067     -0.004    0.3%  ok
+      40    0.20    0.075     +0.005    0.0%  ok
+      40    0.40    0.111     +0.041    0.0%  ok
+      40    0.60    0.079     +0.008    0.3%  ok
+  largest valid |effect|: L36 alpha=0.4 delta +0.142 (+0.071 vs baseline)
+--- data/logs/batch_run_12.log
+      36    0.40    0.159     +0.089    1.4%  ok
+      36    0.60    0.131     +0.060    6.9%  ok
+      40    0.20    0.126     +0.056    0.0%  ok
+      40    0.40    0.094     +0.023    0.3%  ok
+      40    0.60    0.115     +0.044    0.7%  ok
+  largest valid |effect|: L36 alpha=0.4 delta +0.159 (+0.089 vs baseline)
+baseline E_BASE: delta_all=+0.070 (parse failures 0.0%)
+      36    0.20    0.076     +0.006    0.0%  ok
+      36    0.40    0.142     +0.071    0.0%  ok
+      36    0.60    0.067     -0.004    0.3%  ok
+      40    0.20    0.075     +0.005    0.0%  ok
+      40    0.40    0.111     +0.041    0.0%  ok
+      40    0.60    0.079     +0.008    0.3%  ok
+  largest valid |effect|: L36 alpha=0.4 delta +0.142 (+0.071 vs baseline)
+BATCH12_EXIT=0

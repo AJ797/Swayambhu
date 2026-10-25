@@ -1,0 +1,89 @@
+p_nash=1.3702  p_monopoly=2.0000  n_firms=3
+conditions: ['C_COLLUDE', 'C_COMPETE', 'E_BASE', 'E_CHAT']
+6 episodes x 12 rounds x 3 firms = 216 turns per condition
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-sctlBS56yfy06KCOl17t6w
+Building image im-DIUGTAhKFREbIjptdeXprr
+
+=> Step 0: FROM base
+
+=> Step 1: ENV HF_HOME=/cache/hf
+
+=> Step 2: ENV TOKENIZERS_PARALLELISM=false
+
+=> Step 3: ENV SWAY_MODEL=Qwen/Qwen2.5-14B-Instruct
+
+=> Step 4: ENV SWAY_GPU=A100-80GB
+Saving image...
+Image saved, took 823.86ms
+
+Built image im-DIUGTAhKFREbIjptdeXprr in 2.22s
+
+
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:05<00:36,  5.28s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:07<00:20,  3.43s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:09<00:14,  2.82s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:14<00:15,  3.78s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:22<00:15,  5.14s/it]
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB, 48 layers x 5120
+capturing 12 of 48 layers: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44]
+
+--- C_COLLUDE ---
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:27<00:10,  5.18s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:29<00:04,  4.16s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:30<00:00,  3.11s/it]Loading checkpoint shards: 100%|██████████| 8/8 [00:30<00:00,  3.81s/it]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/modal_app.py", line 215, in step
+    from swayambhu.agents import parse_response
+  File "/root/swayambhu/agents.py", line 26, in <module>
+    from .game import BertrandConfig, display_grid, monopoly_price, nash_price, snap_to_grid
+  File "/root/swayambhu/game.py", line 29, in <module>
+    from scipy.optimize import brentq
+ModuleNotFoundError: No module named 'scipy'
+Stopping app - uncaught exception raised in remote container: ModuleNotFoundError("No module named 'scipy'").
+Traceback (most recent call last):
+  File "E:\empire\Swayambhu\scripts\main_runs.py", line 177, in <module>
+    main()
+  File "E:\empire\Swayambhu\scripts\main_runs.py", line 166, in main
+    all_stats = drive(runner, info["n_layers"])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\scripts\main_runs.py", line 132, in drive
+    eps, stats = run_condition(
+                 ^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\swayambhu\env.py", line 143, in run_condition
+    out = runner.step.remote(
+          ^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_object.py", line 49, in wrapped
+    return await method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_functions.py", line 2081, in remote
+    return await self._call_function(args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_functions.py", line 2018, in _call_function
+    return await invocation.run_function()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_functions.py", line 517, in run_function
+    return await _process_result(
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\empire\Swayambhu\.venv\Lib\site-packages\modal\_utils\function_utils.py", line 572, in _process_result
+    raise exc_with_hints(exc)
+  File "<ta-01M5PX8T5ZN948TC9K835289KR>:/root/modal_app.py", line 215, in step
+  File "<ta-01M5PX8T5ZN948TC9K835289KR>:/root/swayambhu/agents.py", line 26, in <module>
+  File "<ta-01M5PX8T5ZN948TC9K835289KR>:/root/swayambhu/game.py", line 29, in <module>
+ModuleNotFoundError: No module named 'scipy'
+EXIT=1

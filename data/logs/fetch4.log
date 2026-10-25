@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "E:\empire\Swayambhu\scripts\fetch_acts.py", line 60, in <module>
+    main()
+  File "E:\empire\Swayambhu\scripts\fetch_acts.py", line 30, in main
+    out.mkdir(parents=True, exist_ok=True)
+  File "C:\Users\ariet\AppData\Local\Programs\Python\Python311\Lib\pathlib.py", line 1116, in mkdir
+    os.mkdir(self, mode)
+FileExistsError: [WinError 183] Cannot create a file when that file already exists: 'data\\activations_main'
+EXIT=1

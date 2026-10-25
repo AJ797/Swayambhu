@@ -1,0 +1,94 @@
+{
+ "phase": "ablate",
+ "args": {
+  "phase": "ablate",
+  "directions": null,
+  "positions": "all",
+  "tau": 0.05,
+  "direction": "data/cap72/direction_pre_price.npy",
+  "run_id": "ablate72",
+  "condition": "E_BASE",
+  "ablate_condition": "E_CANON",
+  "episodes": 8,
+  "rounds": 14,
+  "firms": 3,
+  "layers": null,
+  "alphas": [
+   -0.4,
+   -0.2,
+   -0.1,
+   0.1,
+   0.2,
+   0.4
+  ],
+  "max_parse_fail": 0.1,
+  "layer": 64,
+  "alpha": 1.0,
+  "steer_firms": null,
+  "backend": "modal",
+  "micro_batch": 8,
+  "layer_stride": 4
+ },
+ "ablate": {
+  "layer": 64,
+  "baseline": {
+   "condition": "E_CANON",
+   "label": null,
+   "condition_spec": {
+    "name": "E_CANON",
+    "objective": "neutral",
+    "comms": "canon",
+    "org_prompt": false,
+    "maverick": false,
+    "rumour": false,
+    "strategic": false,
+    "label": null,
+    "optional": false
+   },
+   "steering": null,
+   "steer_firms": null,
+   "n_episodes": 8,
+   "n_rounds": 14,
+   "turns": 336,
+   "parse_failures": 0,
+   "parse_failure_rate": 0.0,
+   "off_grid_snaps": 4,
+   "off_grid_rate": 0.011904761904761904,
+   "delta_all": 0.1276785714285714,
+   "delta_last10": 0.11083333333333308,
+   "delta_last10_sd": 0.1038528606571177,
+   "tag": "baseline"
+  },
+  "ablated": {
+   "condition": "E_CANON",
+   "label": null,
+   "condition_spec": {
+    "name": "E_CANON",
+    "objective": "neutral",
+    "comms": "canon",
+    "org_prompt": false,
+    "maverick": false,
+    "rumour": false,
+    "strategic": false,
+    "label": null,
+    "optional": false
+   },
+   "steering": {
+    "layer": 64,
+    "mode": "ablate"
+   },
+   "steer_firms": null,
+   "n_episodes": 8,
+   "n_rounds": 14,
+   "turns": 336,
+   "parse_failures": 0,
+   "parse_failure_rate": 0.0,
+   "off_grid_snaps": 5,
+   "off_grid_rate": 0.01488095238095238,
+   "delta_all": 0.2529761904761903,
+   "delta_last10": 0.3016666666666664,
+   "delta_last10_sd": 0.1837948735834479,
+   "tag": "ablate_L64"
+  }
+ }
+}

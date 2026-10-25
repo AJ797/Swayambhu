@@ -1,0 +1,73 @@
+{
+ "phase": "competence",
+ "args": {
+  "phase": "competence",
+  "direction": "data/main/direction_pre_price.npy",
+  "run_id": "steer14",
+  "condition": "E_BASE",
+  "ablate_condition": "E_CHAT",
+  "episodes": 8,
+  "rounds": 10,
+  "firms": 3,
+  "layers": null,
+  "alphas": [
+   -0.4,
+   -0.2,
+   -0.1,
+   0.1,
+   0.2,
+   0.4
+  ],
+  "max_parse_fail": 0.1,
+  "layer": 40,
+  "alpha": 0.4,
+  "steer_firms": null,
+  "backend": "modal",
+  "micro_batch": 8,
+  "layer_stride": 4
+ },
+ "competence": {
+  "none": {
+   "cost_low": {
+    "format_ok_rate": 0.9583333333333334,
+    "on_grid_rate": 1.0,
+    "mean_price": 151.6086956521739
+   },
+   "cost_high": {
+    "format_ok_rate": 1.0,
+    "on_grid_rate": 1.0,
+    "mean_price": 157.33333333333334
+   },
+   "cost_elasticity": 5.724637681159436,
+   "competent": true
+  },
+  "steer_L40_a0.4": {
+   "cost_low": {
+    "format_ok_rate": 0.9166666666666666,
+    "on_grid_rate": 1.0,
+    "mean_price": 183.13636363636363
+   },
+   "cost_high": {
+    "format_ok_rate": 1.0,
+    "on_grid_rate": 1.0,
+    "mean_price": 191.875
+   },
+   "cost_elasticity": 8.738636363636374,
+   "competent": true
+  },
+  "ablate_L40": {
+   "cost_low": {
+    "format_ok_rate": 0.9583333333333334,
+    "on_grid_rate": 1.0,
+    "mean_price": 154.34782608695653
+   },
+   "cost_high": {
+    "format_ok_rate": 0.9583333333333334,
+    "on_grid_rate": 0.9565217391304348,
+    "mean_price": 159.04347826086956
+   },
+   "cost_elasticity": 4.695652173913032,
+   "competent": true
+  }
+ }
+}

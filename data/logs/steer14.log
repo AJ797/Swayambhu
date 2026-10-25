@@ -1,0 +1,56 @@
+p_nash=1.3702 p_monopoly=2.0000
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-UxO9JqnZRX8ptRgCw1JzOJ
+Building image im-nvJeZHNr5R1vqHeZa6bGXZ
+
+=> Step 0: FROM base
+
+=> Step 1: ENV HF_HOME=/cache/hf
+
+=> Step 2: ENV TOKENIZERS_PARALLELISM=false
+
+=> Step 3: ENV SWAY_MODEL=Qwen/Qwen2.5-14B-Instruct
+
+=> Step 4: ENV SWAY_GPU=A100-80GB
+
+=> Step 5: ENV SWAY_DEVICE_MAP=cuda
+Saving image...
+Image saved, took 1.83s
+
+Built image im-nvJeZHNr5R1vqHeZa6bGXZ in 2.59s
+
+
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:02<00:19,  2.81s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:05<00:16,  2.83s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:08<00:13,  2.74s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:10<00:10,  2.72s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:13<00:08,  2.67s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:17<00:06,  3.11s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:20<00:02,  2.91s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:21<00:00,  2.38s/it]Loading checkpoint shards: 100%|██████████| 8/8 [00:21<00:00,  2.66s/it]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB
+
+baseline E_BASE: delta_all=+0.070
+
+   layer   alpha    delta  d_vs_base    fail
+      12   -2.00    0.479     +0.409   97.2%
+      12   -1.00    0.514     +0.443   93.1%
+      12    1.00    0.500     +0.430   99.3%
+      12    2.00    0.503     +0.432   99.7%
+      12    4.00    0.500     +0.430  100.0%
+      16   -2.00    0.500     +0.430  100.0%
+      16   -1.00    0.601     +0.531   31.2%
+      16    1.00    0.427     +0.357   96.2%
+      16    2.00    0.500     +0.430  100.0%
+      16    4.00    0.500     +0.430  100.0%
+      20   -2.00    0.500     +0.430  100.0%
+      20   -1.00    0.253     +0.183    0.0%
+      20    1.00    0.469     +0.398   66.7%
+      20    2.00    0.500     +0.430  100.0%

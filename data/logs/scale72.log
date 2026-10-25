@@ -1,0 +1,208 @@
+p_nash=1.3702  p_monopoly=2.0000  n_firms=3
+conditions: ['C_COLLUDE', 'C_COMPETE', 'E_CHAT', 'E_BASE']
+8 episodes x 24 rounds x 3 firms = 576 turns per condition
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-vVFbSStKA9YEER0sqSS5Uq
+Building image im-3d3Sbmyj2vYQWYOAmlk896
+
+=> Step 0: FROM base
+
+=> Step 1: ENV HF_HOME=/cache/hf
+
+=> Step 2: ENV TOKENIZERS_PARALLELISM=false
+
+=> Step 3: ENV SWAY_MODEL=Qwen/Qwen2.5-72B-Instruct
+
+=> Step 4: ENV SWAY_GPU=A100-80GB:4
+
+=> Step 5: ENV SWAY_DEVICE_MAP=auto
+Saving image...
+Image saved, took 562.74ms
+
+Built image im-3d3Sbmyj2vYQWYOAmlk896 in 1.21s
+
+
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1AFetching 37 files:   0%|          | 0/37 [00:00<?, ?it/s]
+[1AFetching 37 files:   0%|          | 0/37 [00:16<?, ?it/s]
+[1AFetching 37 files:   3%|▎         | 1/37 [00:51<30:40, 51.12s/it]
+[1AFetching 37 files:   5%|▌         | 2/37 [00:58<16:56, 29.05s/it]
+[1AFetching 37 files:   8%|▊         | 3/37 [01:00<11:22, 20.08s/it]
+[1AFetching 37 files:  11%|█         | 4/37 [01:04<08:55, 16.22s/it]
+[1AFetching 37 files:  14%|█▎        | 5/37 [01:14<07:57, 14.91s/it]
+[1AFetching 37 files:  16%|█▌        | 6/37 [01:17<06:39, 12.88s/it]
+[1AFetching 37 files:  19%|█▉        | 7/37 [01:36<06:51, 13.73s/it]
+[1AFetching 37 files:  22%|██▏       | 8/37 [01:44<06:19, 13.08s/it]
+[1AFetching 37 files:  24%|██▍       | 9/37 [01:51<05:47, 12.40s/it]
+[1AFetching 37 files:  27%|██▋       | 10/37 [02:04<05:35, 12.41s/it]
+[1AFetching 37 files:  30%|██▉       | 11/37 [02:25<05:44, 13.25s/it]
+[1AFetching 37 files:  32%|███▏      | 12/37 [02:28<05:08, 12.35s/it]
+[1AFetching 37 files:  35%|███▌      | 13/37 [02:42<05:00, 12.52s/it]
+[1AFetching 37 files:  38%|███▊      | 14/37 [02:52<04:43, 12.31s/it]
+[1AFetching 37 files:  41%|████      | 15/37 [03:05<04:32, 12.39s/it]
+[1AFetching 37 files:  43%|████▎     | 16/37 [03:24<04:28, 12.76s/it]
+[1AFetching 37 files:  46%|████▌     | 17/37 [03:36<04:14, 12.71s/it]
+[1AFetching 37 files:  49%|████▊     | 18/37 [03:46<03:59, 12.59s/it]
+[1AFetching 37 files:  51%|█████▏    | 19/37 [03:59<03:46, 12.61s/it]
+[1AFetching 37 files:  54%|█████▍    | 20/37 [04:02<03:26, 12.15s/it]
+[1AFetching 37 files:  57%|█████▋    | 21/37 [04:15<03:15, 12.19s/it]
+[1AFetching 37 files:  59%|█████▉    | 22/37 [04:24<03:00, 12.00s/it]
+[1AFetching 37 files:  62%|██████▏   | 23/37 [04:37<02:48, 12.07s/it]
+[1AFetching 37 files:  65%|██████▍   | 24/37 [04:50<02:37, 12.11s/it]
+[1AFetching 37 files:  68%|██████▊   | 25/37 [04:58<02:23, 11.96s/it]
+[1AFetching 37 files:  70%|███████   | 26/37 [05:12<02:12, 12.00s/it][modal-client] 2026-10-24T13:24:15+0000 Modal Client → Modal Worker Heartbeat attempt failed (attempt_dur=62.82, time_since_heartbeat_success=62.82, error=ConnectionError('Deadline exceeded'))
+
+[1AFetching 37 files:  73%|███████▎  | 27/37 [05:28<02:01, 12.18s/it]
+[1AFetching 37 files:  76%|███████▌  | 28/37 [05:35<01:47, 11.97s/it]
+[1AFetching 37 files:  78%|███████▊  | 29/37 [05:51<01:36, 12.11s/it]
+[1AFetching 37 files:  81%|████████  | 30/37 [06:00<01:24, 12.01s/it]
+[1AFetching 37 files:  84%|████████▍ | 31/37 [06:13<01:12, 12.04s/it]
+[1AFetching 37 files:  86%|████████▋ | 32/37 [06:25<01:00, 12.05s/it]
+[1AFetching 37 files:  89%|████████▉ | 33/37 [06:38<00:48, 12.07s/it]
+[1AFetching 37 files:  92%|█████████▏| 34/37 [06:49<00:36, 12.05s/it]
+[1AFetching 37 files:  95%|█████████▍| 35/37 [07:04<00:24, 12.12s/it]
+[1AFetching 37 files:  97%|█████████▋| 36/37 [07:11<00:11, 11.98s/it]
+[1AFetching 37 files: 100%|██████████| 37/37 [07:16<00:00, 11.79s/it]
+[1AFetching 37 files: 100%|██████████| 37/37 [07:16<00:00, 11.79s/it]
+
+[1ALoading checkpoint shards:   0%|          | 0/37 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:   3%|▎         | 1/37 [00:00<00:35,  1.02it/s]
+[1ALoading checkpoint shards:   5%|▌         | 2/37 [00:01<00:31,  1.10it/s]
+[1ALoading checkpoint shards:   8%|▊         | 3/37 [00:03<00:35,  1.05s/it]
+[1ALoading checkpoint shards:  11%|█         | 4/37 [00:04<00:41,  1.26s/it]
+[1ALoading checkpoint shards:  14%|█▎        | 5/37 [00:06<00:43,  1.37s/it]
+[1ALoading checkpoint shards:  16%|█▌        | 6/37 [00:07<00:41,  1.33s/it]
+[1ALoading checkpoint shards:  19%|█▉        | 7/37 [00:08<00:37,  1.23s/it]
+[1ALoading checkpoint shards:  22%|██▏       | 8/37 [00:09<00:34,  1.20s/it]
+[1ALoading checkpoint shards:  24%|██▍       | 9/37 [00:10<00:29,  1.07s/it]
+[1ALoading checkpoint shards:  27%|██▋       | 10/37 [00:11<00:26,  1.02it/s]
+[1ALoading checkpoint shards:  30%|██▉       | 11/37 [00:11<00:23,  1.11it/s]
+[1ALoading checkpoint shards:  32%|███▏      | 12/37 [00:12<00:21,  1.17it/s]
+[1ALoading checkpoint shards:  35%|███▌      | 13/37 [00:13<00:19,  1.20it/s]
+[1ALoading checkpoint shards:  38%|███▊      | 14/37 [00:14<00:18,  1.21it/s]
+[1ALoading checkpoint shards:  41%|████      | 15/37 [00:14<00:17,  1.27it/s]
+[1ALoading checkpoint shards:  43%|████▎     | 16/37 [00:15<00:16,  1.30it/s]
+[1ALoading checkpoint shards:  46%|████▌     | 17/37 [00:16<00:15,  1.32it/s]
+[1ALoading checkpoint shards:  49%|████▊     | 18/37 [00:17<00:14,  1.34it/s]
+[1ALoading checkpoint shards:  51%|█████▏    | 19/37 [00:17<00:13,  1.33it/s]
+[1ALoading checkpoint shards:  54%|█████▍    | 20/37 [00:18<00:12,  1.32it/s]
+[1ALoading checkpoint shards:  57%|█████▋    | 21/37 [00:19<00:12,  1.33it/s]
+[1ALoading checkpoint shards:  59%|█████▉    | 22/37 [00:20<00:11,  1.34it/s]
+[1ALoading checkpoint shards:  62%|██████▏   | 23/37 [00:20<00:10,  1.37it/s]
+[1ALoading checkpoint shards:  65%|██████▍   | 24/37 [00:21<00:09,  1.34it/s]
+[1ALoading checkpoint shards:  68%|██████▊   | 25/37 [00:22<00:08,  1.36it/s]
+[1ALoading checkpoint shards:  70%|███████   | 26/37 [00:23<00:08,  1.36it/s]
+[1ALoading checkpoint shards:  73%|███████▎  | 27/37 [00:23<00:07,  1.34it/s]
+[1ALoading checkpoint shards:  76%|███████▌  | 28/37 [00:24<00:06,  1.36it/s]
+[1ALoading checkpoint shards:  78%|███████▊  | 29/37 [00:25<00:05,  1.34it/s]
+[1ALoading checkpoint shards:  81%|████████  | 30/37 [00:26<00:05,  1.35it/s]
+[1ALoading checkpoint shards:  84%|████████▍ | 31/37 [00:26<00:04,  1.35it/s]
+[1ALoading checkpoint shards:  86%|████████▋ | 32/37 [00:27<00:03,  1.37it/s]
+[1ALoading checkpoint shards:  89%|████████▉ | 33/37 [00:28<00:02,  1.36it/s]
+[1ALoading checkpoint shards:  92%|█████████▏| 34/37 [00:29<00:02,  1.33it/s]
+[1ALoading checkpoint shards:  95%|█████████▍| 35/37 [00:29<00:01,  1.34it/s]
+[1ALoading checkpoint shards:  97%|█████████▋| 36/37 [00:30<00:00,  1.34it/s]
+[1ALoading checkpoint shards: 100%|██████████| 37/37 [00:31<00:00,  1.41it/s]
+[1ALoading checkpoint shards: 100%|██████████| 37/37 [00:31<00:00,  1.19it/s]
+[load] Qwen/Qwen2.5-72B-Instruct: blocks at 'model.layers', n_layers=80, d_model=8192
+backend: Qwen/Qwen2.5-72B-Instruct on A100-80GB:4, 80 layers x 8192
+capturing 20 of 80 layers: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76]
+
+--- C_COLLUDE ---
+    [C_COLLUDE] round   1/24  delta=+1.058
+    [C_COLLUDE] round   5/24  delta=+1.058
+    [C_COLLUDE] round  10/24  delta=+1.058
+    [C_COLLUDE] round  15/24  delta=+1.058
+    [C_COLLUDE] round  20/24  delta=+1.058
+    delta_all=+1.058 delta_last10=+1.058 (438.4s)
+
+--- C_COMPETE ---
+    [C_COMPETE] round   1/24  delta=+0.092
+    [C_COMPETE] round   5/24  delta=-0.100
+
+[1ALoading checkpoint shards:   0%|          | 0/37 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:   3%|▎         | 1/37 [00:03<01:55,  3.22s/it]
+[1ALoading checkpoint shards:   5%|▌         | 2/37 [00:06<01:55,  3.30s/it]
+[1ALoading checkpoint shards:   8%|▊         | 3/37 [00:09<01:52,  3.32s/it]
+    [C_COMPETE] round  10/24  delta=-0.100
+[1ALoading checkpoint shards:  11%|█         | 4/37 [00:12<01:46,  3.22s/it]
+[1ALoading checkpoint shards:  14%|█▎        | 5/37 [00:16<01:44,  3.28s/it]
+[1ALoading checkpoint shards:  16%|█▌        | 6/37 [00:19<01:41,  3.27s/it]
+[1ALoading checkpoint shards:  19%|█▉        | 7/37 [00:22<01:34,  3.14s/it]
+[1ALoading checkpoint shards:  22%|██▏       | 8/37 [00:25<01:29,  3.09s/it]
+[1ALoading checkpoint shards:  24%|██▍       | 9/37 [00:28<01:25,  3.05s/it]
+[1ALoading checkpoint shards:  27%|██▋       | 10/37 [00:34<01:46,  3.93s/it]
+[1ALoading checkpoint shards:  30%|██▉       | 11/37 [00:37<01:34,  3.62s/it]
+[1ALoading checkpoint shards:  32%|███▏      | 12/37 [00:42<01:42,  4.11s/it]
+[1ALoading checkpoint shards:  35%|███▌      | 13/37 [00:45<01:29,  3.74s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 14/37 [00:48<01:20,  3.48s/it]
+[1ALoading checkpoint shards:  41%|████      | 15/37 [00:52<01:22,  3.75s/it]
+[1ALoading checkpoint shards:  43%|████▎     | 16/37 [00:55<01:11,  3.42s/it]
+[1ALoading checkpoint shards:  46%|████▌     | 17/37 [00:57<01:03,  3.19s/it]
+[1ALoading checkpoint shards:  49%|████▊     | 18/37 [01:01<01:05,  3.42s/it]
+[1ALoading checkpoint shards:  51%|█████▏    | 19/37 [01:04<00:56,  3.12s/it]
+[1ALoading checkpoint shards:  54%|█████▍    | 20/37 [01:06<00:49,  2.90s/it]
+[1ALoading checkpoint shards:  57%|█████▋    | 21/37 [01:09<00:44,  2.78s/it]
+[1ALoading checkpoint shards:  59%|█████▉    | 22/37 [01:11<00:39,  2.66s/it]
+[1ALoading checkpoint shards:  62%|██████▏   | 23/37 [01:13<00:35,  2.54s/it]
+[1ALoading checkpoint shards:  65%|██████▍   | 24/37 [01:18<00:41,  3.20s/it]
+[1ALoading checkpoint shards:  68%|██████▊   | 25/37 [01:21<00:36,  3.08s/it]
+[1ALoading checkpoint shards:  70%|███████   | 26/37 [01:24<00:32,  2.98s/it]
+[1ALoading checkpoint shards:  73%|███████▎  | 27/37 [01:26<00:28,  2.83s/it]
+[1ALoading checkpoint shards:  76%|███████▌  | 28/37 [01:29<00:25,  2.80s/it]
+[1ALoading checkpoint shards:  78%|███████▊  | 29/37 [01:32<00:22,  2.78s/it]
+[1ALoading checkpoint shards:  81%|████████  | 30/37 [01:34<00:19,  2.75s/it]
+[1ALoading checkpoint shards:  84%|████████▍ | 31/37 [01:37<00:16,  2.69s/it]
+[1ALoading checkpoint shards:  86%|████████▋ | 32/37 [01:39<00:13,  2.69s/it]
+[1ALoading checkpoint shards:  89%|████████▉ | 33/37 [01:42<00:10,  2.59s/it]
+[1ALoading checkpoint shards:  92%|█████████▏| 34/37 [01:46<00:08,  2.97s/it]
+[1ALoading checkpoint shards:  95%|█████████▍| 35/37 [01:48<00:05,  2.74s/it]
+[1ALoading checkpoint shards:  97%|█████████▋| 36/37 [01:50<00:02,  2.60s/it]
+[1ALoading checkpoint shards: 100%|██████████| 37/37 [01:52<00:00,  2.42s/it]
+[1ALoading checkpoint shards: 100%|██████████| 37/37 [01:52<00:00,  3.05s/it]
+[load] Qwen/Qwen2.5-72B-Instruct: blocks at 'model.layers', n_layers=80, d_model=8192
+    [C_COMPETE] round  15/24  delta=-0.079
+    [C_COMPETE] round  20/24  delta=-0.092
+    delta_all=-0.083 delta_last10=-0.089 (457.1s)
+
+--- E_CHAT ---
+    [E_CHAT] round   1/24  delta=+0.275
+    [E_CHAT] round   5/24  delta=+0.200
+    [E_CHAT] round  10/24  delta=+0.200
+    [E_CHAT] round  15/24  delta=+0.192
+    [E_CHAT] round  20/24  delta=+0.187
+    delta_all=+0.198 delta_last10=+0.190 (771.4s)
+
+--- E_BASE ---
+    [E_BASE] round   1/24  delta=+0.346
+    [E_BASE] round   5/24  delta=+0.162
+    [E_BASE] round  10/24  delta=+0.142
+    [E_BASE] round  15/24  delta=+0.121
+    [E_BASE] round  20/24  delta=+0.112
+    delta_all=+0.152 delta_last10=+0.123 (461.1s)
+Stopping app - local entrypoint completed.
+[modal-client] 2026-10-24T19:32:32+0530 Timed out waiting for final app logs.
+✓ App completed. View run at 
+https://modal.com/apps/ariet-jha/main/ap-vVFbSStKA9YEER0sqSS5Uq
+
+======================================================================================
+BEHAVIOURAL SUMMARY   (delta: 0 = Bertrand-Nash, 1 = perfect cartel)
+======================================================================================
+condition         eps  delta_all delta_last10         sd parse_fail
+C_COLLUDE           8      1.058        1.058      0.028      0.0%
+C_COMPETE           8     -0.083       -0.089      0.007      0.0%
+E_CHAT              8      0.198        0.190      0.125      0.0%
+E_BASE              8      0.152        0.123      0.051      0.0%
+
+======================================================================================
+GATE 2 -- instructed separation (collude - compete) = +1.147
+  PASS. The model plays the game; the contrast is strong enough
+  to define a steering direction. Proceed to the probe.
+======================================================================================
+
+wrote data\scale72\summary.json
+EXIT=0

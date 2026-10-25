@@ -1,0 +1,96 @@
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-w0P6ahA5sofKg28H94dA5C
+Building image im-e8GSHdDgKTqebUBqLYBzgr
+
+=> Step 0: FROM base
+
+=> Step 1: ENV HF_HOME=/cache/hf
+
+=> Step 2: ENV TOKENIZERS_PARALLELISM=false
+
+=> Step 3: ENV SWAY_MODEL=Qwen/Qwen2.5-14B-Instruct
+Saving image...
+Image saved, took 489.38ms
+
+Built image im-e8GSHdDgKTqebUBqLYBzgr in 1.05s
+
+
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1AFetching 8 files:   0%|          | 0/8 [00:00<?, ?it/s]
+[1AFetching 8 files:  12%|█▎        | 1/8 [01:07<07:50, 67.21s/it]
+[1AFetching 8 files:  25%|██▌       | 2/8 [01:19<03:58, 39.79s/it][modal-client] 2026-10-24T12:09:37+0000 Modal Client → Modal Worker Heartbeat attempt failed (attempt_dur=62.97, time_since_heartbeat_success=62.97, error=ConnectionError('Deadline exceeded'))
+
+[1AFetching 8 files:  38%|███▊      | 3/8 [01:21<02:16, 27.30s/it]
+[1AFetching 8 files:  50%|█████     | 4/8 [01:38<01:38, 24.53s/it]
+[1AFetching 8 files:  62%|██████▎   | 5/8 [01:51<01:07, 22.36s/it]
+[1AFetching 8 files:  75%|███████▌  | 6/8 [02:04<00:41, 20.72s/it]
+[1AFetching 8 files:  88%|████████▊ | 7/8 [02:18<00:19, 19.78s/it]
+[1AFetching 8 files: 100%|██████████| 8/8 [02:23<00:00, 17.91s/it]
+[1AFetching 8 files: 100%|██████████| 8/8 [02:23<00:00, 17.91s/it]
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:01<00:09,  1.31s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:02<00:07,  1.25s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:03<00:06,  1.29s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:05<00:05,  1.26s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:06<00:03,  1.24s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:07<00:02,  1.23s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:09<00:01,  1.41s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:09<00:00,  1.14s/it]Loading checkpoint shards: 100%|██████████| 8/8 [00:09<00:00,  1.23s/it]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+
+=== model info ===
+  model: Qwen/Qwen2.5-14B-Instruct
+  gpu: A10G
+  block_path: model.layers
+  n_layers: 48
+  d_model: 5120
+  block_type: Qwen2DecoderLayer
+
+  p_nash=137  p_monopoly=200  grid=[131, 137, 143, 150, 156, 162, 169, 175, 181, 187, 194, 200, 206]
+
+=== step 1: do the framings separate behaviourally? ===
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+  collude  mean price 200.0  delta 1.0  parsed 8/8
+           sample: 'PRICE: 200'
+  compete  mean price 137.0  delta -0.0  parsed 8/8
+           sample: 'PRICE: 137'
+  neutral  mean price 161.25  delta 0.385  parsed 8/8
+           sample: 'PRICE: 162'
+
+=== step 2: capture residual stream, build direction ===
+  captured (8, 48, 5120) (batch, layers, d_model), dtype float16
+  direction norm by layer: min 0.28 max 102.07 argmax L47
+
+=== step 3: inject direction into neutral prompt ===
+  baseline (no steering): price 161.25  delta 0.385
+
+   layer   alpha    price    delta  parsed
+      12    -8.0   161.25    0.385       8
+      12    -4.0   161.25    0.385       8
+      12     4.0   161.25    0.385       8
+      12     8.0   161.25    0.385       8
+      24    -8.0   161.25    0.385       8
+      24    -4.0   161.25    0.385       8
+      24     4.0  162.125    0.399       8
+      24     8.0  163.875    0.426       8
+      36    -8.0   161.25    0.385       8
+      36    -4.0   161.25    0.385       8
+      36     4.0   161.25    0.385       8
+      36     8.0   161.25    0.385       8
+
+=== GATE 1 ===
+  hooks capture : PASS
+  hooks steer   : PASS
+  framing split : PASS
+
+wrote data/gate1_modal.json
+Stopping app - local entrypoint completed.
+Runner terminated.
+✓ App completed. View run at 
+https://modal.com/apps/ariet-jha/main/ap-w0P6ahA5sofKg28H94dA5C
+EXIT=0

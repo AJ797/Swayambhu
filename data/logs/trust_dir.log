@@ -1,0 +1,61 @@
+40 paired contexts; 5 paraphrases per side
+
+--- example TRUST context (user turn) ---
+fit 20.7
+Round 2: Firm A 187  Firm B 162  Firm C 143   | your profit 26.1
+Round 3: Firm A 156  Firm B 150  Firm C 175   | your profit 16.8
+
+Your private assessment: I think the other firms are trustworthy and would be good partners to keep prices high with.
+
+It is Round 4. Choose your price now, in the required format.
+
+--- example DISTRUST context (user turn) ---
+43   | your profit 20.7
+Round 2: Firm A 187  Firm B 162  Firm C 143   | your profit 26.1
+Round 3: Firm A 156  Firm B 150  Firm C 175   | your profit 16.8
+
+Your private assessment: I think the other firms are not trustworthy and want to secretly undercut me.
+
+It is Round 4. Choose your price now, in the required format.
+✓ Initialized. View run at 
+https://modal.com/apps/ariet-jha/main/ap-JDuNkiJ3xoo6rxQYn6xWGE
+✓ Created objects.
+├── ✓ Uploaded E:\empire\Swayambhu\modal_app.py
+├── ✓ Uploaded PythonPackage:swayambhu
+└── ✓ Created Function Runner.*.
+
+[1ALoading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]
+[1ALoading checkpoint shards:  12%|█▎        | 1/8 [00:02<00:16,  2.37s/it]
+[1ALoading checkpoint shards:  25%|██▌       | 2/8 [00:04<00:14,  2.39s/it]
+[1ALoading checkpoint shards:  38%|███▊      | 3/8 [00:07<00:12,  2.44s/it]
+[1ALoading checkpoint shards:  50%|█████     | 4/8 [00:09<00:09,  2.40s/it]
+[1ALoading checkpoint shards:  62%|██████▎   | 5/8 [00:12<00:07,  2.40s/it]
+[1ALoading checkpoint shards:  75%|███████▌  | 6/8 [00:14<00:04,  2.38s/it]
+[1ALoading checkpoint shards:  88%|████████▊ | 7/8 [00:16<00:02,  2.36s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:17<00:00,  1.93s/it]
+[1ALoading checkpoint shards: 100%|██████████| 8/8 [00:17<00:00,  2.21s/it]
+backend: Qwen/Qwen2.5-14B-Instruct on A100-80GB
+
+capturing 12 layers: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44]
+[load] Qwen/Qwen2.5-14B-Instruct: blocks at 'model.layers', n_layers=48, d_model=5120
+
+   layer     ||v||   cohen_d
+       0      0.16      2.62
+       4      0.39      2.68
+       8      0.75      3.77
+      12      1.06      3.59
+      16      1.28      2.99
+      20      1.61      3.26
+      24      3.17      3.56
+      28      6.82      3.61
+      32     10.63      5.05
+      36     13.13      5.70
+      40     17.88      7.24
+      44     24.18      7.01
+
+saved data\main\direction_trust.npy  shape (12, 5120)
+Stopping app - local entrypoint completed.
+Runner terminated.
+✓ App completed. View run at 
+https://modal.com/apps/ariet-jha/main/ap-JDuNkiJ3xoo6rxQYn6xWGE
+EXIT=0

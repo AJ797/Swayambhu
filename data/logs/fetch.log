@@ -1,0 +1,6 @@
+Usage: python -m modal volume get [OPTIONS] VOLUME_NAME REMOTE_PATH
+                                  [LOCAL_DESTINATION]
+Try 'python -m modal volume get --help' for help.
+
+Error: Output path 'data\acts\main' already exists. Use --force to overwrite the output directory
+EXIT=2

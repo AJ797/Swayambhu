@@ -1,0 +1,125 @@
+{
+ "phase": "sweep",
+ "args": {
+  "phase": "sweep",
+  "directions": null,
+  "positions": "generated",
+  "tau": 0.05,
+  "direction": "data/main/direction_pre_price.npy",
+  "run_id": "posgen",
+  "condition": "E_BASE",
+  "ablate_condition": "E_CHAT",
+  "episodes": 8,
+  "rounds": 12,
+  "firms": 3,
+  "layers": [
+   36,
+   40
+  ],
+  "alphas": [
+   0.2,
+   0.4,
+   0.6
+  ],
+  "max_parse_fail": 0.1,
+  "layer": null,
+  "alpha": 1.0,
+  "steer_firms": null,
+  "backend": "modal",
+  "micro_batch": 8,
+  "layer_stride": 4
+ },
+ "baseline": {
+  "condition": "E_BASE",
+  "label": null,
+  "condition_spec": {
+   "name": "E_BASE",
+   "objective": "neutral",
+   "comms": "off",
+   "org_prompt": false,
+   "maverick": false,
+   "rumour": false,
+   "strategic": false,
+   "label": null,
+   "optional": false
+  },
+  "steering": null,
+  "steer_firms": null,
+  "n_episodes": 8,
+  "n_rounds": 12,
+  "turns": 288,
+  "parse_failures": 0,
+  "parse_failure_rate": 0.0,
+  "off_grid_snaps": 1,
+  "off_grid_rate": 0.003472222222222222,
+  "delta_all": 0.0704861111111107,
+  "delta_last10": 0.04416666666666624,
+  "delta_last10_sd": 0.020733092174374586,
+  "tag": "baseline"
+ },
+ "sweep": [
+  {
+   "layer": null,
+   "alpha": 0.0,
+   "delta": 0.0704861111111107,
+   "parse_fail": 0.0,
+   "valid": true
+  },
+  {
+   "layer": 36,
+   "alpha": 0.2,
+   "delta": 0.30034722222222227,
+   "d_vs_base": 0.22986111111111157,
+   "parse_fail": 0.0,
+   "valid": true
+  },
+  {
+   "layer": 36,
+   "alpha": 0.4,
+   "delta": 0.9496527777777779,
+   "d_vs_base": 0.8791666666666672,
+   "parse_fail": 0.0,
+   "valid": true
+  },
+  {
+   "layer": 36,
+   "alpha": 0.6,
+   "delta": 1.0170138888888889,
+   "d_vs_base": 0.9465277777777782,
+   "parse_fail": 0.0,
+   "valid": true
+  },
+  {
+   "layer": 40,
+   "alpha": 0.2,
+   "delta": 0.2576388888888889,
+   "d_vs_base": 0.18715277777777822,
+   "parse_fail": 0.0,
+   "valid": true
+  },
+  {
+   "layer": 40,
+   "alpha": 0.4,
+   "delta": 1.0222222222222221,
+   "d_vs_base": 0.9517361111111114,
+   "parse_fail": 0.003472222222222222,
+   "valid": true
+  },
+  {
+   "layer": 40,
+   "alpha": 0.6,
+   "delta": 1.0145833333333332,
+   "d_vs_base": 0.9440972222222225,
+   "parse_fail": 0.006944444444444444,
+   "valid": true
+  }
+ ],
+ "best": {
+  "layer": 40,
+  "alpha": 0.4,
+  "delta": 1.0222222222222221,
+  "d_vs_base": 0.9517361111111114,
+  "parse_fail": 0.003472222222222222,
+  "valid": true
+ }
+}
